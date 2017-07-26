@@ -33,7 +33,7 @@ if __name__ == '__main__':
     accuracy_list = []
     for round in range(10):
         net = MnistNet()
-        for i in range(100000):
+        for i in range(30000):
             batch_xs, batch_ys = net.mnist.train.next_batch(100)
             net.sess.run(net.train_op, {net.x: batch_xs, net.y_: batch_ys})
             if i % 1000 == 0:
