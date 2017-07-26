@@ -14,10 +14,10 @@ class MnistNet(object):
 
     def _build_net(self):
         self.x = tf.placeholder(tf.float32, [None, 784], name='x')
-        # with tf.name_scope('layer_1'):
-        #     self.W1 = tf.Variable(tf.random_normal([784, 256], stddev=0.3, name='W1'))
-        #     self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 256]), name='b1')
-        #     self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
+        with tf.name_scope('layer_1'):
+            self.W1 = tf.Variable(tf.random_normal([784, 10], stddev=0.3, name='W1'))
+            self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b1')
+            self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
         # with tf.name_scope('layer_2'):
         #     self.W2 = tf.Variable(tf.random_normal([256, 64], stddev=0.3, name='W2'))
         #     self.b2 = tf.Variable(tf.constant(0.1, shape=[1, 64]), name='b2')
@@ -30,12 +30,7 @@ class MnistNet(object):
         #     self.W4 = tf.Variable(tf.random_normal([32, 10], stddev=0.3, name='W4'))
         #     self.b4 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b4')
         #     self.l4 = tf.matmul(self.l3, self.W4) + self.b4
-        with tf.name_scope('hidden'):
-            self.W1 = tf.Variable(tf.random_normal([784, 10], stddev=0.3, name='W1'))
-            self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b1')
-            self.l1 = tf.matmul(self.x, self.W1) + self.b1
         with tf.name_scope('softmax'):
-            # self.y = tf.nn.softmax(self.l4, name='output')
             self.y = tf.nn.softmax(self.l1, name='output')
         with tf.name_scope('train'):
             self.y_ = tf.placeholder(tf.float32, [None, 10])
