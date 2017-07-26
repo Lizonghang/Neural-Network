@@ -4,7 +4,7 @@ import tensorflow as tf
 
 
 class MnistNet(object):
-    def __init__(self, lr=0.1):
+    def __init__(self, lr=0.05):
         self.lr = lr
         self.mnist = input_data.read_data_sets('handwrite_datasets', one_hot=True)
         self._build_net()
@@ -48,7 +48,7 @@ class MnistNet(object):
 
 if __name__ == '__main__':
     net = MnistNet()
-    for i in range(10000):
+    for i in range(1000000):
         batch_xs, batch_ys = net.mnist.train.next_batch(100)
         # print net.sess.run(tf.log(net.y), {net.x: batch_xs, net.y_: batch_ys})
         # print net.sess.run(net.cross_entropy, {net.x: batch_xs, net.y_: batch_ys})
