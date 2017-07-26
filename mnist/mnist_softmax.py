@@ -17,7 +17,8 @@ class MnistNet(object):
         with tf.name_scope('layer_1'):
             self.W1 = tf.Variable(tf.random_normal([784, 10], stddev=0.3, name='W1'))
             self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b1')
-            self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
+            # self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
+            self.l1 = tf.matmul(self.x, self.W1) + self.b1
         # with tf.name_scope('layer_2'):
         #     self.W2 = tf.Variable(tf.random_normal([256, 64], stddev=0.3, name='W2'))
         #     self.b2 = tf.Variable(tf.constant(0.1, shape=[1, 64]), name='b2')
