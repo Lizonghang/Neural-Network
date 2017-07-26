@@ -30,12 +30,17 @@ class MnistNet(object):
 
 
 if __name__ == '__main__':
-    net = MnistNet()
-    for i in range(100000):
-        batch_xs, batch_ys = net.mnist.train.next_batch(100)
-        net.sess.run(net.train_op, {net.x: batch_xs, net.y_: batch_ys})
-        if i % 1000 == 0:
-            print 'step {0}, accuracy = {1}'.format(
-                i,
-                net.sess.run(net.accuracy, feed_dict={net.x: net.mnist.test.images, net.y_: net.mnist.test.labels})
-            )
+    accuracy_list = []
+    for round in range(10):
+        net = MnistNet()
+        for i in range(100000):
+            batch_xs, batch_ys = net.mnist.train.next_batch(100)
+            net.sess.run(net.train_op, {net.x: batch_xs, net.y_: batch_ys})
+            if i % 1000 == 0:
+                print 'step {0}, accuracy = {1}'.format(
+                    i,
+                    net.sess.run(net.accuracy, feed_dict={net.x: net.mnist.test.images, net.y_: net.mnist.test.labels})
+                )
+        accuracy_list.append(net.sess.run(net.accuracy, feed_dict={net.x: net.mnist.test.images, net.y_: net.mnist.test.labels}))
+        del net
+    print 'average accurracy: ', sum(accuracy_list) / float(len(accuracy_list))
