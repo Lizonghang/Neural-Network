@@ -15,7 +15,7 @@ class MnistNet(object):
     def _build_net(self):
         self.x = tf.placeholder(tf.float32, [None, 784], name='x')
         with tf.name_scope('layer_1'):
-            self.W1 = tf.Variable(tf.random_normal([784, 10], stddev=0.3, name='W1'))
+            self.W1 = tf.Variable(tf.random_normal([784, 10], stddev=0.1, name='W1'))
             self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b1')
             self.l1 = tf.matmul(self.x, self.W1) + self.b1
         with tf.name_scope('softmax'):
