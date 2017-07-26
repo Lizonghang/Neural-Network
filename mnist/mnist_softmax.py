@@ -19,7 +19,7 @@ class MnistNet(object):
             self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 256]), name='b1')
             self.l1 = tf.matmul(self.x, self.W1) + self.b1
         with tf.name_scope('softmax'):
-            self.y = tf.nn.softmax(self.l3, name='output')
+            self.y = tf.nn.softmax(self.l1, name='output')
         with tf.name_scope('train'):
             self.y_ = tf.placeholder(tf.float32, [None, 10])
             self.cross_entropy = -tf.reduce_sum(self.y_ * tf.log(self.y + 0.01))
