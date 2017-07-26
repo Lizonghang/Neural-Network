@@ -17,23 +17,23 @@ class MnistNet(object):
         with tf.name_scope('layer_1'):
             self.W1 = tf.Variable(tf.random_normal([784, 256], stddev=0.3, name='W1'))
             self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 256]), name='b1')
-            self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
-            # self.l1 = tf.matmul(self.x, self.W1) + self.b1
+            # self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
+            self.l1 = tf.matmul(self.x, self.W1) + self.b1
         with tf.name_scope('layer_2'):
-            self.W2 = tf.Variable(tf.random_normal([256, 10], stddev=0.3, name='W2'))
-            self.b2 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b2')
+            self.W2 = tf.Variable(tf.random_normal([256, 64], stddev=0.3, name='W2'))
+            self.b2 = tf.Variable(tf.constant(0.1, shape=[1, 64]), name='b2')
             # self.l2 = tf.nn.relu(tf.matmul(self.l1, self.W2) + self.b2)
             self.l2 = tf.matmul(self.l1, self.W2) + self.b2
-        # with tf.name_scope('layer_3'):
-        #     self.W3 = tf.Variable(tf.random_normal([64, 32], stddev=0.3, name='W3'))
-        #     self.b3 = tf.Variable(tf.constant(0.1, shape=[1, 32]), name='b3')
-        #     self.l3 = tf.nn.relu(tf.matmul(self.l2, self.W3) + self.b3)
+        with tf.name_scope('layer_3'):
+            self.W3 = tf.Variable(tf.random_normal([64, 10], stddev=0.3, name='W3'))
+            self.b3 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b3')
+            self.l3 = tf.matmul(self.l2, self.W3) + self.b3
         # with tf.name_scope('layer_4'):
         #     self.W4 = tf.Variable(tf.random_normal([32, 10], stddev=0.3, name='W4'))
         #     self.b4 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b4')
         #     self.l4 = tf.matmul(self.l3, self.W4) + self.b4
         with tf.name_scope('softmax'):
-            self.y = tf.nn.softmax(self.l2, name='output')
+            self.y = tf.nn.softmax(self.l3, name='output')
         with tf.name_scope('train'):
             self.y_ = tf.placeholder(tf.float32, [None, 10])
             self.cross_entropy = -tf.reduce_sum(self.y_ * tf.log(self.y + 0.01))
