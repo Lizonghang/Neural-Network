@@ -17,21 +17,7 @@ class MnistNet(object):
         with tf.name_scope('layer_1'):
             self.W1 = tf.Variable(tf.random_normal([784, 256], stddev=0.3, name='W1'))
             self.b1 = tf.Variable(tf.constant(0.1, shape=[1, 256]), name='b1')
-            # self.l1 = tf.nn.relu(tf.matmul(self.x, self.W1) + self.b1)
             self.l1 = tf.matmul(self.x, self.W1) + self.b1
-        with tf.name_scope('layer_2'):
-            self.W2 = tf.Variable(tf.random_normal([256, 64], stddev=0.3, name='W2'))
-            self.b2 = tf.Variable(tf.constant(0.1, shape=[1, 64]), name='b2')
-            # self.l2 = tf.nn.relu(tf.matmul(self.l1, self.W2) + self.b2)
-            self.l2 = tf.matmul(self.l1, self.W2) + self.b2
-        with tf.name_scope('layer_3'):
-            self.W3 = tf.Variable(tf.random_normal([64, 10], stddev=0.3, name='W3'))
-            self.b3 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b3')
-            self.l3 = tf.matmul(self.l2, self.W3) + self.b3
-        # with tf.name_scope('layer_4'):
-        #     self.W4 = tf.Variable(tf.random_normal([32, 10], stddev=0.3, name='W4'))
-        #     self.b4 = tf.Variable(tf.constant(0.1, shape=[1, 10]), name='b4')
-        #     self.l4 = tf.matmul(self.l3, self.W4) + self.b4
         with tf.name_scope('softmax'):
             self.y = tf.nn.softmax(self.l3, name='output')
         with tf.name_scope('train'):
@@ -45,11 +31,11 @@ class MnistNet(object):
 
 if __name__ == '__main__':
     net = MnistNet()
-    for i in range(1000000):
+    for i in range(100000):
         batch_xs, batch_ys = net.mnist.train.next_batch(100)
-        # print net.sess.run(tf.log(net.y), {net.x: batch_xs, net.y_: batch_ys})
-        # print net.sess.run(net.cross_entropy, {net.x: batch_xs, net.y_: batch_ys})
         net.sess.run(net.train_op, {net.x: batch_xs, net.y_: batch_ys})
         if i % 1000 == 0:
-            print 'step ', i
-            print net.sess.run(net.accuracy, feed_dict={net.x: net.mnist.test.images, net.y_: net.mnist.test.labels})
+            print 'step {0}, accuracy = {1}'.format(
+                i,
+                net.sess.run(net.accuracy, feed_dict={net.x: net.mnist.test.images, net.y_: net.mnist.test.labels})
+            )
