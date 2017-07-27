@@ -98,8 +98,8 @@ writer = tf.summary.FileWriter('logs', graph=sess.graph)
 for i in range(1000000):
     batch = mnist.train.next_batch(50)
     sess.run(train_op, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-	if i % 100 == 0:
-		print 'step {0}, training accuracy {1}'.format(
+    if i % 100 == 0:
+        print 'step {0}, training accuracy {1}'.format(
             i,
             sess.run(accuracy, feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
         )
