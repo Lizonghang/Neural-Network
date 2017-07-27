@@ -22,14 +22,14 @@ class MnistNet(object):
             tf.summary.histogram('layer_1/b1', self.b1)
         with tf.name_scope('softmax'):
             self.y = tf.nn.softmax(self.l1, name='output')
+        with tf.name_scope('loss'):
+            self.y_ = tf.placeholder(tf.float32, [None, 10], name='y_')
+            self.cross_entropy = -tf.reduce_sum(self.y_ * tf.log(self.y + 0.01), name='loss')
         with tf.name_scope('train'):
-            self.y_ = tf.placeholder(tf.float32, [None, 10])
-            self.cross_entropy = -tf.reduce_sum(self.y_ * tf.log(self.y + 0.01))
             self.train_op = tf.train.GradientDescentOptimizer(self.lr).minimize(self.cross_entropy)
-            tf.summary.scalar('loss', self.cross_entropy)
         with tf.name_scope('eval'):
             self.correct_prediction = tf.equal(tf.argmax(self.y, 1), tf.argmax(self.y_, 1))
-            self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name='accuracy')
             tf.summary.scalar('accuracy', self.accuracy)
 
 
