@@ -9,8 +9,7 @@ class MnistNet(object):
         self.mnist = input_data.read_data_sets('handwrite_datasets', one_hot=True)
         self._build_net()
         self.sess = tf.Session()
-        tf.summary.merge_all()
-        tf.summary.FileWriter("logs", self.sess.graph)
+        self.writer = tf.summary.FileWriter("logs", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
 
     def _build_net(self):
@@ -40,6 +39,8 @@ if __name__ == '__main__':
         batch_xs, batch_ys = net.mnist.train.next_batch(100)
         net.sess.run(net.train_op, {net.x: batch_xs, net.y_: batch_ys})
         if i % 1000 == 0:
+            summary = net.sess.run(tf.summary.merge_all())
+            net.writer.add_summary(summary, i)
             print 'step {0}, accuracy = {1}'.format(
                 i,
                 net.sess.run(net.accuracy, feed_dict={net.x: net.mnist.test.images, net.y_: net.mnist.test.labels})
