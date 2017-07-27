@@ -37,9 +37,9 @@ if __name__ == '__main__':
     net = MnistNet()
     for i in range(30000):
         batch_xs, batch_ys = net.mnist.train.next_batch(100)
-        net.sess.run(net.train_op, {net.x: batch_xs, net.y_: batch_ys})
+        net.sess.run(net.train_op, feed_dict={net.x: batch_xs, net.y_: batch_ys})
         if i % 1000 == 0:
-            summary = net.sess.run(tf.summary.merge_all())
+            summary = net.sess.run(tf.summary.merge_all(), feed_dict={net.x: batch_xs, net.y_: batch_ys})
             net.writer.add_summary(summary, i)
             print 'step {0}, accuracy = {1}'.format(
                 i,
