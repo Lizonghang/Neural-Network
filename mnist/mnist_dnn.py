@@ -10,7 +10,7 @@ class MnistNet(object):
         self._build_net()
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
-        tf.summary.FileWriter("logs_new/", self.sess.graph)
+        tf.summary.FileWriter("logs", self.sess.graph)
 
     def _build_net(self):
         self.x = tf.placeholder(tf.float32, [None, 784], name='x')
