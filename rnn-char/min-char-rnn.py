@@ -1,7 +1,7 @@
 import numpy as np
 
 # data I/O
-data = open('input_cifar10.py', 'r').read()
+data = open('index.html', 'r').read()
 chars = list(set(data))
 data_size, vocab_size = len(data), len(chars)
 print 'data has %d characters, %d unique.' % (data_size, vocab_size)
