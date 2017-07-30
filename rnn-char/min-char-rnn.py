@@ -96,7 +96,7 @@ while True:
         txt = ''.join(ix_to_char[ix] for ix in sample_ix)
         # print '----\n %s \n----' % (txt,)
         with open('rnn_output.txt', 'w') as fp:
-            fp.write(txt)
+            fp.write('----\n %s \n----' % (txt,))
 
     # forward seq_length characters through the net and fetch gradient
     loss, dWxh, dWhh, dWhy, dbh, dby, hprev = lossFun(inputs, targets, hprev)
