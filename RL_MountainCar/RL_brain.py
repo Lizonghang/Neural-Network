@@ -37,8 +37,9 @@ class PolicyGradient:
             self.tf_actions = tf.placeholder(tf.int32, [None, ], name="actions")
             self.tf_rewards = tf.placeholder(tf.float32, [None, ], name="rewards")
 
+        """
         # full-connect-layer-1
-        layer_1 = tf.layers.dense(
+        self.layer_1 = tf.layers.dense(
             inputs=self.tf_observation,
             units=10,
             activation=tf.nn.tanh,
@@ -48,17 +49,30 @@ class PolicyGradient:
         )
 
         # full-connect-layer-2
-        all_act = tf.layers.dense(
-            inputs=layer_1,
+        self.all_act = tf.layers.dense(
+            inputs=self.layer_1,
             units=self.n_actions,
             activation=None,
             kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.3),
             bias_initializer=tf.constant_initializer(0.1),
             name='fc2'
         )
+        """
+
+        # full-connect-layer-1
+        with tf.name_scope('fc1'):
+            self.w1 = tf.Variable(tf.truncated_normal([self.n_features, 10], stddev=0.3), name='w1')
+            self.b1 = tf.Variable(tf.constant(0.1), name='b1')
+            self.l1 = tf.nn.tanh(tf.matmul(self.tf_observation, self.w1) + self.b1)
+
+        # full-connect-layer-2
+        with tf.name_scope('fc2'):
+            self.w2 = tf.Variable(tf.truncated_normal([10, self.n_actions], stddev=0.3), name='w2')
+            self.b2 = tf.Variable(tf.constant(0.1), name='b2')
+            self.all_act = tf.matmul(self.l1, self.w2) + self.b2
 
         # softmax-output
-        self.all_act_prob = tf.nn.softmax(all_act, name='action_probability')
+        self.all_act_prob = tf.nn.softmax(self.all_act, name='action_probability')
 
         with tf.name_scope('loss'):
             # to maximize total reward (log_p * R) is to minimize -(log_p * R), and the tf only have minimize(loss)
