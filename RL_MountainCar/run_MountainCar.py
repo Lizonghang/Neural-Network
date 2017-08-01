@@ -20,10 +20,10 @@ RL = PolicyGradient(
     n_features=env.observation_space.shape[0],
     learning_rate=0.02,
     reward_decay=0.995,
-    # output_graph=True,
+    output_graph=True,
 )
 
-for i_episode in range(1000):
+for i_episode in range(5):
 
     observation = env.reset()
 
@@ -60,3 +60,5 @@ for i_episode in range(1000):
             break
 
         observation = observation_
+
+print 'Model saved in ', RL.saver.save(RL.sess, '/tmp/model.ckpt')

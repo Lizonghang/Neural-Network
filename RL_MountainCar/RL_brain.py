@@ -27,7 +27,8 @@ class PolicyGradient:
 
         self._build_net()
         self.sess = tf.Session()
-        if output_graph: tf.summary.FileWriter("logs/", self.sess.graph)
+        self.writer = tf.summary.FileWriter("logs/", self.sess.graph) if output_graph else None
+        self.saver = tf.train.Saver()
         self.sess.run(tf.global_variables_initializer())
 
     def _build_net(self):
