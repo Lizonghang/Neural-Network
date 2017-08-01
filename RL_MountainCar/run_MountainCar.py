@@ -2,7 +2,7 @@ import gym
 from RL_brain import PolicyGradient
 import matplotlib.pyplot as plt
 
-DISPLAY_REWARD_THRESHOLD = -2000
+DISPLAY_REWARD_THRESHOLD = -300
 
 RENDER = False
 
@@ -42,10 +42,10 @@ for i_episode in range(1000):
 
             rewards_sum = sum(RL.experience_rewards)
 
-            running_reward = running_reward*0.99 + rewards_sum*0.01 if 'running_reward' in globals() else rewards_sum
+            running_reward = running_reward*0.995 + rewards_sum*0.005 if 'running_reward' in globals() else rewards_sum
 
-            # if running_reward > DISPLAY_REWARD_THRESHOLD:
-            #     RENDER = True
+            if running_reward > DISPLAY_REWARD_THRESHOLD:
+                RENDER = True
 
             print("episode:", i_episode, "  reward:", int(running_reward))
 
@@ -61,4 +61,4 @@ for i_episode in range(1000):
 
         observation = observation_
 
-print 'Model saved in ', RL.saver.save(RL.sess, '/tmp/train/model.ckpt')
+# print 'Model saved in ', RL.saver.save(RL.sess, '/tmp/train/model.ckpt')

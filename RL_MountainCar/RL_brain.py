@@ -1,7 +1,6 @@
 # coding=utf-8
 import numpy as np
 import tensorflow as tf
-import sys
 
 np.random.seed(1)
 tf.set_random_seed(1)
@@ -30,6 +29,7 @@ class PolicyGradient:
         self.writer = tf.summary.FileWriter("logs/", self.sess.graph) if output_graph else None
         self.saver = tf.train.Saver()
         self.sess.run(tf.global_variables_initializer())
+        # self.saver.restore(self.sess, '/tmp/train/model.ckpt')
 
     def _build_net(self):
         with tf.name_scope('inputs'):
