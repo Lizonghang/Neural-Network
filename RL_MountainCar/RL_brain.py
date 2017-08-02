@@ -99,7 +99,7 @@ class PolicyGradient:
             loss = tf.reduce_mean(neg_log_prob * self.tf_rewards)
 
             # ———————————— summary ————————————
-            tf.summary.histogram('loss', loss)
+            tf.summary.scalar('loss', loss)
             # —————————————————————————————————
 
         with tf.name_scope('train'):
