@@ -68,7 +68,7 @@ class PolicyGradient:
             # ———————————— summary ————————————
             tf.summary.histogram('w1', self.w1)
             tf.summary.histogram('b1', self.b1)
-            tf.summary.histogram('l1', self.l1)
+            # tf.summary.histogram('l1', self.l1)
             # —————————————————————————————————
 
         # full-connect-layer-2
@@ -80,7 +80,7 @@ class PolicyGradient:
             # ———————————— summary ————————————
             tf.summary.histogram('w2', self.w2)
             tf.summary.histogram('b2', self.b2)
-            tf.summary.histogram('all_act', self.all_act)
+            # tf.summary.histogram('all_act', self.all_act)
             # —————————————————————————————————
 
         # softmax-output
@@ -88,7 +88,7 @@ class PolicyGradient:
             self.all_act_prob = tf.nn.softmax(self.all_act, name='action_probability')
 
             # ———————————— summary ————————————
-            tf.summary.histogram('all_act_prob', self.all_act_prob)
+            # tf.summary.histogram('all_act_prob', self.all_act_prob)
             # —————————————————————————————————
 
         with tf.name_scope('loss'):
@@ -118,17 +118,12 @@ class PolicyGradient:
     def learn(self):
         discounted_experience_rewards_norm = self._discount_and_norm_rewards()
 
-        self.sess.run(self.train_op, feed_dict={
+        _, summary = self.sess.run([self.train_op, tf.summary.merge_all()], feed_dict={
              self.tf_observation: np.vstack(self.experience_observations),  # shape=[None, n_obs]
              self.tf_actions: np.array(self.experience_actions),  # shape=[None, ]
              self.tf_rewards: discounted_experience_rewards_norm,  # shape=[None, ]
         })
 
-        summary = self.sess.run(tf.summary.merge_all(), feed_dict={
-             self.tf_observation: np.vstack(self.experience_observations),  # shape=[None, n_obs]
-             self.tf_actions: np.array(self.experience_actions),  # shape=[None, ]
-             self.tf_rewards: discounted_experience_rewards_norm,  # shape=[None, ]
-        })
         self.writer.add_summary(summary)
 
         self.experience_observations, self.experience_actions, self.experience_rewards = [], [], []
