@@ -66,8 +66,8 @@ class PolicyGradient:
             self.l1 = tf.nn.tanh(tf.matmul(self.tf_observation, self.w1) + self.b1)
 
             # ———————————— summary ————————————
-            tf.summary.histogram('w1', self.w1)
-            tf.summary.histogram('b1', self.b1)
+            # tf.summary.histogram('w1', self.w1)
+            # tf.summary.histogram('b1', self.b1)
             # tf.summary.histogram('l1', self.l1)
             # —————————————————————————————————
 
@@ -78,8 +78,8 @@ class PolicyGradient:
             self.all_act = tf.matmul(self.l1, self.w2) + self.b2
 
             # ———————————— summary ————————————
-            tf.summary.histogram('w2', self.w2)
-            tf.summary.histogram('b2', self.b2)
+            # tf.summary.histogram('w2', self.w2)
+            # tf.summary.histogram('b2', self.b2)
             # tf.summary.histogram('all_act', self.all_act)
             # —————————————————————————————————
 
@@ -99,7 +99,7 @@ class PolicyGradient:
             loss = tf.reduce_mean(neg_log_prob * self.tf_rewards)
 
             # ———————————— summary ————————————
-            tf.summary.scalar('loss', loss)
+            # tf.summary.scalar('loss', loss)
             # —————————————————————————————————
 
         with tf.name_scope('train'):
