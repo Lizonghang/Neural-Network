@@ -63,7 +63,7 @@ class PolicyGradient:
         with tf.name_scope('fc1'):
             self.w1 = tf.Variable(tf.random_normal([self.n_features, 10], stddev=0.3), name='w1')
             self.b1 = tf.Variable(tf.constant(0.1), name='b1')
-            self.l1 = tf.nn.sigmoid(tf.matmul(self.tf_observation, self.w1) + self.b1)
+            self.l1 = tf.nn.sigmoid(tf.matmul(self.tf_observation, self.w1) + self.b1) - 0.5
 
         # full-connect-layer-2
         with tf.name_scope('fc2'):
