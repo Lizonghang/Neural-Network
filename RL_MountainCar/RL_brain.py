@@ -61,13 +61,13 @@ class PolicyGradient:
 
         # full-connect-layer-1
         with tf.name_scope('fc1'):
-            self.w1 = tf.Variable(tf.random_normal([self.n_features, 10], stddev=0.3), name='w1')
+            self.w1 = tf.Variable(tf.truncated_normal([self.n_features, 10], stddev=0.3), name='w1')
             self.b1 = tf.Variable(tf.constant(0.1), name='b1')
-            self.l1 = tf.nn.tanh(tf.matmul(self.tf_observation, self.w1) + self.b1)
+            self.l1 = tf.nn.sigmoid(tf.matmul(self.tf_observation, self.w1) + self.b1)
 
         # full-connect-layer-2
         with tf.name_scope('fc2'):
-            self.w2 = tf.Variable(tf.random_normal([10, self.n_actions], stddev=0.3), name='w2')
+            self.w2 = tf.Variable(tf.truncated_normal([10, self.n_actions], stddev=0.3), name='w2')
             self.b2 = tf.Variable(tf.constant(0.1), name='b2')
             self.all_act = tf.matmul(self.l1, self.w2) + self.b2
 
