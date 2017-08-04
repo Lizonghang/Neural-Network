@@ -1,4 +1,4 @@
 *.pyc
 *.DS_Store
 mnist/logs
-RL_MountainCar/logs
+RL_MountainCar_CartPole/logs

@@ -2,13 +2,15 @@ import gym
 from RL_brain import PolicyGradient
 import matplotlib.pyplot as plt
 
-DISPLAY_REWARD_THRESHOLD = 0
+# env = gym.make('MountainCar-v0')
+# DISPLAY_REWARD_THRESHOLD = -2000
+env = gym.make('CartPole-v0')
+DISPLAY_REWARD_THRESHOLD = 400
+
+env.seed(1)
+env = env.unwrapped
 
 RENDER = False
-
-env = gym.make('MountainCar-v0')
-env.seed(1)     # reproducible, general Policy gradient has high variance
-env = env.unwrapped
 
 print(env.action_space)
 print(env.observation_space)
@@ -19,8 +21,8 @@ RL = PolicyGradient(
     n_actions=env.action_space.n,
     n_features=env.observation_space.shape[0],
     learning_rate=0.02,
-    reward_decay=0.995,
-    output_graph=True,
+    reward_decay=0.99,
+    # output_graph=True,
 )
 
 for i_episode in range(1000):
@@ -34,7 +36,7 @@ for i_episode in range(1000):
 
         action = RL.choose_action(observation)
 
-        observation_, reward, done, info = env.step(action)  # reward = -1
+        observation_, reward, done, info = env.step(action)
 
         RL.store_transition(observation, action, reward)
 
@@ -42,7 +44,7 @@ for i_episode in range(1000):
 
             rewards_sum = sum(RL.experience_rewards)
 
-            running_reward = running_reward*0.995 + rewards_sum*0.005 if 'running_reward' in globals() else rewards_sum
+            running_reward = running_reward*0.99 + rewards_sum*0.01 if 'running_reward' in globals() else rewards_sum
 
             if running_reward > DISPLAY_REWARD_THRESHOLD:
                 RENDER = True
@@ -61,4 +63,4 @@ for i_episode in range(1000):
 
         observation = observation_
 
-# print 'Model saved in ', RL.saver.save(RL.sess, '/tmp/train/model.ckpt')
+print 'Model saved in ', RL.saver.save(RL.sess, '/tmp/train/model.ckpt')

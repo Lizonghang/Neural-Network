@@ -65,31 +65,15 @@ class PolicyGradient:
             self.b1 = tf.Variable(tf.constant(0.1), name='b1')
             self.l1 = tf.nn.tanh(tf.matmul(self.tf_observation, self.w1) + self.b1)
 
-            # ———————————— summary ————————————
-            # tf.summary.histogram('w1', self.w1)
-            # tf.summary.histogram('b1', self.b1)
-            # tf.summary.histogram('l1', self.l1)
-            # —————————————————————————————————
-
         # full-connect-layer-2
         with tf.name_scope('fc2'):
             self.w2 = tf.Variable(tf.random_normal([10, self.n_actions], stddev=0.3), name='w2')
             self.b2 = tf.Variable(tf.constant(0.1), name='b2')
             self.all_act = tf.matmul(self.l1, self.w2) + self.b2
 
-            # ———————————— summary ————————————
-            # tf.summary.histogram('w2', self.w2)
-            # tf.summary.histogram('b2', self.b2)
-            # tf.summary.histogram('all_act', self.all_act)
-            # —————————————————————————————————
-
         # softmax-output
         with tf.name_scope('softmax_output'):
             self.all_act_prob = tf.nn.softmax(self.all_act, name='action_probability')
-
-            # ———————————— summary ————————————
-            # tf.summary.histogram('all_act_prob', self.all_act_prob)
-            # —————————————————————————————————
 
         with tf.name_scope('loss'):
             # to maximize total reward (log_p * R) is to minimize -(log_p * R), and the tf only have minimize(loss)
@@ -97,10 +81,6 @@ class PolicyGradient:
             # or in this way:
             neg_log_prob = tf.reduce_sum(-tf.log(self.all_act_prob)*tf.one_hot(self.tf_actions, self.n_actions), axis=1)
             loss = tf.reduce_mean(neg_log_prob * self.tf_rewards)
-
-            # ———————————— summary ————————————
-            # tf.summary.scalar('loss', loss)
-            # —————————————————————————————————
 
         with tf.name_scope('train'):
             self.train_op = tf.train.AdamOptimizer(self.lr).minimize(loss)
@@ -118,13 +98,11 @@ class PolicyGradient:
     def learn(self):
         discounted_experience_rewards_norm = self._discount_and_norm_rewards()
 
-        _, summary = self.sess.run([self.train_op, tf.summary.merge_all()], feed_dict={
+        self.sess.run(self.train_op, feed_dict={
              self.tf_observation: np.vstack(self.experience_observations),  # shape=[None, n_obs]
              self.tf_actions: np.array(self.experience_actions),  # shape=[None, ]
              self.tf_rewards: discounted_experience_rewards_norm,  # shape=[None, ]
         })
-
-        self.writer.add_summary(summary)
 
         self.experience_observations, self.experience_actions, self.experience_rewards = [], [], []
 
