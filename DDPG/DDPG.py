@@ -1,15 +1,3 @@
-"""
-Deep Deterministic Policy Gradient (DDPG), Reinforcement Learning.
-DDPG is Actor Critic based algorithm.
-Pendulum example.
-
-View more on my tutorial page: https://morvanzhou.github.io/tutorials/
-
-Using:
-tensorflow 1.0
-gym 0.8.0
-"""
-
 import tensorflow as tf
 import numpy as np
 import gym
@@ -17,25 +5,26 @@ import gym
 np.random.seed(1)
 tf.set_random_seed(1)
 
-#####################  hyper parameters  ####################
+env = gym.make('Pendulum-v0')
+env = env.unwrapped
+env.seed(1)
 
+state_dim = env.observation_space.shape[0]
+action_dim = env.action_space.shape[0]
+action_bound = env.action_space.high
+
+RENDER = False
+DISPLAY_REWARD_THRESHOLD = -1000
 MAX_EPISODES = 70
-MAX_EP_STEPS = 400
+MAX_EP_STEPS = 500
 LR_A = 0.01  # learning rate for actor
 LR_C = 0.01  # learning rate for critic
 GAMMA = 0.9  # reward discount
-TAU = 0.01  # Soft update for target param, but this is computationally expansive
-# so we use replace_iter instead
 REPLACE_ITER_A = 500
 REPLACE_ITER_C = 300
 MEMORY_CAPACITY = 7000
 BATCH_SIZE = 32
 
-RENDER = False
-OUTPUT_GRAPH = True
-ENV_NAME = 'Pendulum-v0'
-
-###############################  Actor  ####################################
 
 class Actor(object):
     def __init__(self, sess, action_dim, action_bound, learning_rate, t_replace_iter):
@@ -50,7 +39,7 @@ class Actor(object):
             # input s, output a
             self.a = self._build_net(S, scope='eval_net', trainable=True)
 
-            # input s_, output a, get a_ for critic
+            # input s_, output a_, get a_ for critic
             self.a_ = self._build_net(S_, scope='target_net', trainable=False)
 
         self.e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Actor/eval_net')
@@ -60,13 +49,22 @@ class Actor(object):
         with tf.variable_scope(scope):
             init_w = tf.random_normal_initializer(0., 0.3)
             init_b = tf.constant_initializer(0.1)
-            net = tf.layers.dense(s, 30, activation=tf.nn.relu,
-                                  kernel_initializer=init_w, bias_initializer=init_b, name='l1',
+            net = tf.layers.dense(s,
+                                  30,
+                                  activation=tf.nn.relu,
+                                  kernel_initializer=init_w,
+                                  bias_initializer=init_b,
+                                  name='l1',
                                   trainable=trainable)
             with tf.variable_scope('a'):
-                actions = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, kernel_initializer=init_w,
-                                          bias_initializer=init_b, name='a', trainable=trainable)
-                scaled_a = tf.multiply(actions, self.action_bound, name='scaled_a')  # Scale output to -action_bound to action_bound
+                actions = tf.layers.dense(net,
+                                          self.a_dim,
+                                          activation=tf.nn.tanh,
+                                          kernel_initializer=init_w,
+                                          bias_initializer=init_b,
+                                          name='a',
+                                          trainable=trainable)
+                scaled_a = tf.multiply(actions, self.action_bound, name='scaled_a')
         return scaled_a
 
     def learn(self, s, a):   # batch update
@@ -81,8 +79,8 @@ class Actor(object):
         self.t_replace_counter += 1
 
     def choose_action(self, s):
-        s = s[np.newaxis, :]    # single state
-        return self.sess.run(self.a, feed_dict={S: s})[0]  # single action
+        s = s[np.newaxis, :]
+        return self.sess.run(self.a, feed_dict={S: s})[0]
 
     def add_grad_to_graph(self, a_grads):
         with tf.variable_scope('policy_grads'):
@@ -96,8 +94,6 @@ class Actor(object):
             opt = tf.train.AdamOptimizer(-self.lr / BATCH_SIZE)  # (- learning rate) for ascent policy, div to take mean
             self.train_op = opt.apply_gradients(zip(self.policy_grads, self.e_params))
 
-
-###############################  Critic  ####################################
 
 class Critic(object):
     def __init__(self, sess, state_dim, action_dim, learning_rate, gamma, t_replace_iter, a_):
@@ -114,7 +110,7 @@ class Critic(object):
             self.q = self._build_net(S, A, 'eval_net', trainable=True)
 
             # Input (s_, a_), output q_ for q_target
-            self.q_ = self._build_net(S_, a_, 'target_net', trainable=False)    # target_q is based on a_ from Actor's target_net
+            self.q_ = self._build_net(S_, a_, 'target_net', trainable=False)  # q_ based on Actor's target_net a_
 
             self.e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Critic/eval_net')
             self.t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Critic/target_net')
@@ -135,7 +131,6 @@ class Critic(object):
         with tf.variable_scope(scope):
             init_w = tf.random_normal_initializer(0., 0.1)
             init_b = tf.constant_initializer(0.1)
-
             with tf.variable_scope('l1'):
                 n_l1 = 30
                 w1_s = tf.get_variable('w1_s', [self.s_dim, n_l1], initializer=init_w, trainable=trainable)
@@ -144,7 +139,11 @@ class Critic(object):
                 net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
 
             with tf.variable_scope('q'):
-                q = tf.layers.dense(net, 1, kernel_initializer=init_w, bias_initializer=init_b, trainable=trainable)   # Q(s,a)
+                q = tf.layers.dense(net,
+                                    1,
+                                    kernel_initializer=init_w,
+                                    bias_initializer=init_b,
+                                    trainable=trainable)   # Q(s,a)
         return q
 
     def learn(self, s, a, r, s_):
@@ -158,8 +157,6 @@ class Critic(object):
             self.sess.run([tf.assign(t, e) for t, e in zip(self.t_params, self.e_params)])
         self.t_replace_counter += 1
 
-
-#####################  Memory  ####################
 
 class Memory(object):
     def __init__(self, capacity, dims):
@@ -179,15 +176,6 @@ class Memory(object):
         return self.data[indices, :]
 
 
-env = gym.make(ENV_NAME)
-env = env.unwrapped
-env.seed(1)
-
-state_dim = env.observation_space.shape[0]
-action_dim = env.action_space.shape[0]
-action_bound = env.action_space.high
-
-# all placeholder for tf
 with tf.name_scope('S'):
     S = tf.placeholder(tf.float32, shape=[None, state_dim], name='s')
 with tf.name_scope('A'):
@@ -200,23 +188,24 @@ with tf.name_scope('S_'):
 
 sess = tf.Session()
 
-# Create actor and critic.
-# They are actually connected to each other, details can be seen in tensorboard or in this picture:
 actor = Actor(sess, action_dim, action_bound, LR_A, REPLACE_ITER_A)
+
 critic = Critic(sess, state_dim, action_dim, LR_C, GAMMA, REPLACE_ITER_C, actor.a_)
+
 actor.add_grad_to_graph(critic.a_grads)
 
 sess.run(tf.global_variables_initializer())
 
 M = Memory(MEMORY_CAPACITY, dims=2 * state_dim + action_dim + 1)
 
-if OUTPUT_GRAPH:
-    tf.summary.FileWriter("logs/", sess.graph)
+tf.summary.FileWriter("logs/", sess.graph)
 
 var = 3  # control exploration
 
 for i in range(MAX_EPISODES):
+
     s = env.reset()
+
     ep_reward = 0
 
     for j in range(MAX_EP_STEPS):
@@ -227,13 +216,16 @@ for i in range(MAX_EPISODES):
         # Added exploration noise
         a = actor.choose_action(s)
         a = np.clip(np.random.normal(a, var), -2, 2)    # add randomness to action selection for exploration
+
         s_, r, done, info = env.step(a)
 
         M.store_transition(s, a, r / 10, s_)
 
         if M.pointer > MEMORY_CAPACITY:
             var *= .9995    # decay the action randomness
+
             b_M = M.sample(BATCH_SIZE)
+
             b_s = b_M[:, :state_dim]
             b_a = b_M[:, state_dim: state_dim + action_dim]
             b_r = b_M[:, -state_dim - 1: -state_dim]
@@ -243,10 +235,13 @@ for i in range(MAX_EPISODES):
             actor.learn(b_s, b_a)
 
         s = s_
+
         ep_reward += r
 
-        if j == MAX_EP_STEPS-1:
+        if j == MAX_EP_STEPS - 1:
             print('Episode:', i, ' Reward: %i' % int(ep_reward), 'Explore: %.2f' % var, )
-            if ep_reward > -1000:
+
+            if ep_reward > DISPLAY_REWARD_THRESHOLD:
                 RENDER = True
+
             break
