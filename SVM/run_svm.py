@@ -165,6 +165,51 @@ def innerL(i, db):
 
 
 def smo(samples, labels, C, tol, max_iter, kTup=('lin', 0)):
+    samples = mat(samples)
+    labels = mat(labels).transpose()
+    db = SVMDB(samples, labels, C, tol, kTup)
+
+    sigma = 1.3
+    err = 0.001
+    m, n = shape(samples)
+    E = {}
+    for iter in range(max_iter):
+        print "iteration number: %d" % iter
+
+        violate_most_value = 0
+        violate_most_i = -1
+
+        # 选择违反KKT条件最严重的样本
+        for i in range(m):
+            f_xi = float(multiply(db.alphas, db.labels).T * kernel_transform(samples, samples[i, :], ('rbf', sigma))) + db.b
+            E[i] = float(f_xi - labels[i])
+
+            # 违反KKT条件:
+            # ai = 0        >> yi * f_xi >= 1-e             >>  yi * f_xi < 1-e
+            # 0 < ai < C    >> 1-e <= yi * f_xi <= 1+e      >>  yi * f_xi < 1-e or yi * f_xi > 1+e
+            # ai = C        >> yi * f_xi <= 1+e             >>  yi * f_xi > 1+e
+            if db.alphas[i] == 0 and db.labels[i] * f_xi < 1-err:
+                err_abs = abs(1 - err - db.labels[i] * f_xi)
+                if abs(1 - err - db.labels[i] * f_xi) > violate_most_value:
+                    violate_most_value = err_abs
+                    violate_most_i = i
+            if 0 < db.alphas[i] < C and (db.labels[i] * f_xi < 1-err or db.labels[i] * f_xi > 1 + err):
+                err_abs = max(abs(1 - err - db.labels[i] * f_xi), abs(1 + err - db.labels[i] * f_xi))
+                if err_abs > violate_most_value:
+                    violate_most_value = err_abs
+                    violate_most_i = i
+            if db.alphas[i] == C and db.labels[i] * f_xi > 1 + err:
+                err_abs = abs(1 + err - db.labels[i] * f_xi)
+                if err_abs > violate_most_value:
+                    violate_most_value = err_abs
+                    violate_most_i = i
+
+        innerL(violate_most_i, db)
+    return db.b, db.alphas
+
+
+"""
+def smo(samples, labels, C, tol, max_iter, kTup=('lin', 0)):
     db = SVMDB(mat(samples), mat(labels).transpose(), C, tol, kTup)
 
     iter = 0
@@ -194,6 +239,7 @@ def smo(samples, labels, C, tol, max_iter, kTup=('lin', 0)):
         print "iteration number: %d" % iter
 
     return db.b, db.alphas
+"""
 
 
 def calculate_W(alphas, samples, labels):
@@ -281,4 +327,4 @@ def eval_rbf(C=200, tol=0.0001, max_iter=10000, sigma=1.3):
 
 
 if __name__ == '__main__':
-    eval_rbf()
+    eval_rbf(max_iter=100)
