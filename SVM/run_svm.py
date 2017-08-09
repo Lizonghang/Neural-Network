@@ -228,7 +228,7 @@ def plot_samples(samples, labels, support_vector=False):
 def eval_rbf(C=200, tol=0.0001, max_iter=10000, sigma=1.3):
     # 对训练集评估
     samples, labels = load_samples_and_labels('rbf_train.txt')
-    # plot_samples(samples, labels)
+    plot_samples(samples, labels)
     b, alphas = smo(samples, labels, C, tol, max_iter, ('rbf', sigma))
     samples = mat(samples)
     labels = mat(labels).transpose()
