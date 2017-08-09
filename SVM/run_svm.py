@@ -107,6 +107,17 @@ def innerL(i, db):
         ai_old = db.alphas[i].copy()
         aj_old = db.alphas[j].copy()
 
+        """
+        如果aj_new > H, 则aj_new = H;如果aj_new < L,则aj_new = L.其中H和L分别为aj_new的上下界,有:
+
+        H = min(C, C + aj_old - ai_old)   s.t. yi * yj = -1
+        H = min(C, aj_old + ai_old)       s.t. yi * yj = 1
+
+        L = max(0, aj_old - ai_old)       s.t. yi * yj = -1
+        L = max(0, ai_old + aj_old - C)   s.t. yi * yj = 1
+
+        这一约束的意义在于使得ai_new和aj_new均位于矩形域[0,C]x[0,C]中.
+        """
         if db.labels[i] != db.labels[j]:
             L = max(0, db.alphas[j] - db.alphas[i])
             H = min(db.C, db.C + db.alphas[j] - db.alphas[i])
@@ -132,14 +143,14 @@ def innerL(i, db):
             print "aj almost not changed"
             return 0
 
-        # 更新ai
+        # ai更新量 = yi * yj * (aj_old - aj_new)
         db.alphas[i] += db.labels[j] * db.labels[i] * (aj_old - db.alphas[j])
         update_Ek(db, i)
 
-        # 计算b
+        # 更新b
         # b1 = db.b - Ei - db.labels[i] * (db.alphas[i] - ai_old) * db.X[i, :] * db.X[i, :].T - db.labels[j] * (db.alphas[j] - aj_old) * db.X[i, :] * db.X[j, :].T
         # b2 = db.b - Ej - db.labels[i] * (db.alphas[i] - ai_old) * db.X[i, :] * db.X[j, :].T - db.labels[j] * (db.alphas[j] - aj_old) * db.X[j, :] * db.X[j, :].T
-        # 使用核函数计算b
+        # 使用核函数更新b
         b1 = db.b - Ei - db.labels[i] * (db.alphas[i] - ai_old) * db.K[i, i] - db.labels[j] * (db.alphas[j] - aj_old) * db.K[i, j]
         b2 = db.b - Ej - db.labels[i] * (db.alphas[i] - ai_old) * db.K[i, j] - db.labels[j] * (db.alphas[j] - aj_old) * db.K[j, j]
         if 0 < db.alphas[i] < db.C:
@@ -168,7 +179,7 @@ def smo(samples, labels, C, tol, max_iter, kTup=('lin', 0)):
                 alpha_pairs_changed += innerL(i, db)
                 print "fullSet, iter: %d i:%d, pairs changed %d" % (iter, i, alpha_pairs_changed)
             iter += 1
-        else:  # go over non-bound (railed) alphas
+        else:  # 注意:此处没有选择违反KKT最严重的样本点,而是对满足0<ai<C时yi*f(xi)-1≠0的所有样本点逐一选择更新
             non_bound_i_list = nonzero((db.alphas.A > 0) * (db.alphas.A < C))[0]
             for i in non_bound_i_list:
                 alpha_pairs_changed += innerL(i, db)
