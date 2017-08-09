@@ -117,7 +117,6 @@ def innerL(i, db):
             print "L == H"
             return 0
 
-        # eta为aj的最优修改量
         # eta = 2.0 * db.X[i, :] * db.X[j, :].T - db.X[i, :] * db.X[i, :].T - db.X[j, :] * db.X[j, :].T
         # 使用核函数计算aj最优修改量:
         eta = 2.0 * db.K[i, j] - db.K[i, i] - db.K[j, j]
@@ -125,7 +124,7 @@ def innerL(i, db):
             print "eta >= 0"
             return 0
 
-        # 更新aj
+        # aj最优更新量 = yj * (Ei - Ej) / (Kii + Kjj - 2 * Kij)
         db.alphas[j] -= db.labels[j] * (Ei - Ej) / eta
         db.alphas[j] = clip_alpha(db.alphas[j], H, L)
         update_Ek(db, j)
