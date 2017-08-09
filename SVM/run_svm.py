@@ -74,15 +74,16 @@ def select_j(i, db, Ei):
     max_deltaE = 0
     Ej = 0
     db.eCache[i] = [1, Ei]
-    valid_Ecache_list = nonzero(db.eCache[:, 0].A)[0]
-    if len(valid_Ecache_list) > 1:
-        for k in valid_Ecache_list:
-            if k == i:  continue
+    valid_eCache_list = nonzero(db.eCache[:, 0].A)[0]
+    if len(valid_eCache_list) > 1:
+        for k in valid_eCache_list:
+            if k == i:
+                continue
             Ek = calculate_Ei(db, k)
             deltaE = abs(Ei - Ek)
             if deltaE > max_deltaE:
                 max_k = k
-                maxDeltaE = deltaE
+                max_deltaE = deltaE
                 Ej = Ek
         return max_k, Ej
     else:
@@ -227,7 +228,7 @@ def plot_samples(samples, labels, support_vector=False):
 def eval_rbf(C=200, tol=0.0001, max_iter=10000, sigma=1.3):
     # 对训练集评估
     samples, labels = load_samples_and_labels('rbf_train.txt')
-    plot_samples(samples, labels)
+    # plot_samples(samples, labels)
     b, alphas = smo(samples, labels, C, tol, max_iter, ('rbf', sigma))
     samples = mat(samples)
     labels = mat(labels).transpose()
