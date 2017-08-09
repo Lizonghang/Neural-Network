@@ -230,6 +230,8 @@ def eval_rbf(C=200, tol=0.0001, max_iter=10000, sigma=1.3):
     samples, labels = load_samples_and_labels('rbf_train.txt')
     plot_samples(samples, labels)
     b, alphas = smo(samples, labels, C, tol, max_iter, ('rbf', sigma))
+    W = calculate_W(alphas, samples, labels)
+
     samples = mat(samples)
     labels = mat(labels).transpose()
 
