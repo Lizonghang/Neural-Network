@@ -22,7 +22,7 @@ categories: 机器学习
 
 如图所示：
 
-<center><img src="/SVM/static/D9CAC776-9E6A-4C14-B721-BF1EEFC302FB.png" style="width: 300px"></center>
+<center><img src="static/D9CAC776-9E6A-4C14-B721-BF1EEFC302FB.png" style="width: 300px"></center>
 
 <center><label style="font-size: 12px">图 支持向量与间隔</label></center>
 
