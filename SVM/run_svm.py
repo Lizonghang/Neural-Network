@@ -327,4 +327,4 @@ def eval_rbf(C=200, tol=0.0001, max_iter=10000, sigma=1.3):
 
 
 if __name__ == '__main__':
-    eval_rbf(max_iter=100)
+    eval_rbf(max_iter=50)
