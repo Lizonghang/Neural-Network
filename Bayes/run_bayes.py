@@ -61,7 +61,7 @@ class NaiveBayes(object):
                 p0_denominator += sum(matrix_data[i])
         self.p0_vector = np.log(p0_molecular / p0_denominator)
         self.p1_vector = np.log(p1_molecular / p1_denominator)
-        self.p_class1 = np.sum(matrix_class) / float(len(matrix_class))
+        self.p_class1 = (np.sum(matrix_class) + 1) / float(len(matrix_class) + 2.0)
 
     def classify(self, doc):
         doc = self._convert_words_to_vector_bag(doc)
