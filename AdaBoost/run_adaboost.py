@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from compiler.ast import flatten
 
 
 class Stump(object):
@@ -71,7 +72,7 @@ class AdaBoost(object):
             print 'H(x) error: {0}'.format(error_rate)
             print
             if error_rate == 0.0:  break
-        return
+        self.H = H
 
     def classify(self, samples):
         m, n = np.shape(samples)
@@ -86,6 +87,36 @@ class AdaBoost(object):
             )
             H += stump.alpha * classify_result
         return np.sign(H)
+
+    def plot_ROC(self):
+        cursor = (1.0, 1.0)
+        m, n = np.shape(self.samples)
+        y_sum = 0.0
+        positive_num = (self.labels == 1.0).sum()
+        y_step = 1 / float(positive_num)
+        x_step = 1 / float(m - positive_num)
+        sorted_index = flatten(self.H.reshape((1, m)).argsort().tolist())
+        figure = plt.figure()
+        figure.clf()
+        ax = plt.subplot(111)
+        labels = flatten(self.labels.tolist())
+        for index in sorted_index:
+            if labels[index] == 1.0:
+                delX = 0
+                delY = y_step
+            else:
+                delX = x_step
+                delY = 0
+                y_sum += cursor[1]
+            ax.plot([cursor[0], cursor[0] - delX], [cursor[1], cursor[1] - delY], c='b')
+            cursor = (cursor[0] - delX, cursor[1] - delY)
+        ax.plot([0, 1], [0, 1], 'b--')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC for AdaBoost')
+        ax.axis([0, 1, 0, 1])
+        print 'AUC = {0}'.format(y_sum * x_step)
+        plt.show()
 
 
 def load_data(filename):
@@ -104,6 +135,7 @@ if __name__ == '__main__':
     train_samples, train_labels = load_data('train.txt')
     boost = AdaBoost(train_samples, train_labels)
     boost.train(T=95)
+    boost.plot_ROC()
     # test
     test_samples, test_labels = load_data('test.txt')
     m, n = np.shape(test_samples)
