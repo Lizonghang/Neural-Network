@@ -1,13 +1,14 @@
+import random
 import numpy as np
-import matplotlib.pyplot as plt
 from compiler.ast import flatten
 
 
 class Stump(object):
-    def __init__(self, samples, labels, D):
+    def __init__(self, samples, labels):
         self.samples = samples
         self.labels = labels
-        self.D = D
+        m, n = np.shape(self.samples)
+        self.D = np.matrix(np.ones((m, 1)) / m)
         self._build()
 
     def _build(self):
@@ -47,76 +48,54 @@ class Stump(object):
         return classify_result
 
 
-class AdaBoost(object):
+class Bagging(object):
     def __init__(self, samples, labels):
         self.samples = samples
         self.labels = labels
         self.primary_classifiers = []
-        m, n = np.shape(self.samples)
-        self.D = np.matrix(np.ones((m, 1)) / m)
 
-    def train(self, T=95):
+    def _sampling(self, M):
         m, n = np.shape(self.samples)
-        H = np.matrix(np.zeros((m, 1)))
-        error_rate = 1.0
+        sample_index = []
+        for i in range(M):
+            sample_index.append(random.choice(range(m)))
+        samples_M = [self.samples.tolist()[index] for index in sample_index]
+        labels_M = [flatten(self.labels.tolist())[index] for index in sample_index]
+        return np.matrix(samples_M), np.matrix(labels_M)
+
+    def train(self, T=50):
+        m, n = np.shape(self.samples)
         for i in range(1, T + 1):
-            stump = Stump(self.samples, self.labels, self.D)
+            samples_M, labels_M = self._sampling(m/2)
+            stump = Stump(samples_M, labels_M)
             print 'Stump {0} error: {1}'.format(i, stump.min_error)
-            stump.alpha = float(0.5 * np.log((1 - stump.min_error) / max(stump.min_error, 1e-16)))
             self.primary_classifiers.append(stump)
-            D = np.multiply(self.D, np.exp(-1 * stump.alpha * np.multiply(self.labels.T, stump.best_classify_result)))
-            self.D = D / D.sum()
-            H += stump.alpha * stump.best_classify_result
-            error_array = np.sign(H) != self.labels.T
-            error_rate = float(error_array.sum()) / m
-            print 'H(x) error: {0}'.format(error_rate)
-            print
-            if error_rate == 0.0:  break
-        self.H = H
 
-    def classify(self, samples):
-        m, n = np.shape(samples)
-        H = np.matrix(np.zeros((m, 1)))
-        for i in range(len(self.primary_classifiers)):
-            stump = self.primary_classifiers[i]
-            classify_result = stump.classify(
+    def classify(self, samples=None, use_test_set=False):
+        classify_result = []
+        vote = []
+        for stump in self.primary_classifiers:
+            if not use_test_set:
+                samples = stump.samples
+            vote.append(flatten(stump.classify(
                 samples,
                 stump.best_stump['attr'],
                 stump.best_stump['thresh_val'],
                 stump.best_stump['inequal']
-            )
-            H += stump.alpha * classify_result
-        return np.sign(H)
-
-    def plot_ROC(self):
-        cursor = (1.0, 1.0)
-        m, n = np.shape(self.samples)
-        y_sum = 0.0
-        positive_num = (self.labels == 1.0).sum()
-        y_step = 1 / float(positive_num)
-        x_step = 1 / float(m - positive_num)
-        sorted_index = flatten(self.H.reshape((1, m)).argsort().tolist())
-        figure = plt.figure()
-        figure.clf()
-        ax = plt.subplot(111)
-        labels = flatten(self.labels.tolist())
-        for index in sorted_index:
-            if labels[index] == 1.0:
-                delX = 0
-                delY = y_step
+            ).tolist()))
+        vote = np.matrix(vote)
+        m, n = np.shape(vote)
+        for i in range(n):
+            attrs = flatten(vote[:, i].tolist())
+            positive_counter = 0
+            for attr in attrs:
+                if attr == 1.0:
+                    positive_counter += 1
+            if positive_counter > m / 2.0:
+                classify_result.append(1.0)
             else:
-                delX = x_step
-                delY = 0
-                y_sum += cursor[1]
-            ax.plot([cursor[0], cursor[0] - delX], [cursor[1], cursor[1] - delY], c='b')
-            cursor = (cursor[0] - delX, cursor[1] - delY)
-        ax.plot([0, 1], [0, 1], 'b--')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC for AdaBoost')
-        ax.axis([0, 1, 0, 1])
-        print 'AUC = {0}'.format(y_sum * x_step)
-        plt.show()
+                classify_result.append(-1.0)
+        return classify_result
 
 
 def load_data(filename):
@@ -133,11 +112,14 @@ def load_data(filename):
 if __name__ == '__main__':
     # train
     train_samples, train_labels = load_data('train.txt')
-    boost = AdaBoost(train_samples, train_labels)
-    boost.train()
-    boost.plot_ROC()
-    # test
+    bagging = Bagging(train_samples, train_labels)
+    bagging.train()
+    # eval
     test_samples, test_labels = load_data('test.txt')
-    m, n = np.shape(test_samples)
-    error_array = boost.classify(test_samples) != test_labels.T
-    print 'Test error: ', float(error_array.sum()) / m
+    classify_result = bagging.classify(test_samples, use_test_set=True)
+    test_labels = flatten(test_labels.tolist())
+    error_counter = 0
+    for i in range(len(classify_result)):
+        if test_labels[i] != classify_result[i]:
+            error_counter += 1
+    print 'Test error: {0}'.format(float(error_counter) / len(classify_result))
