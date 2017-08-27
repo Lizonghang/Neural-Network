@@ -74,10 +74,10 @@ class RandomForest(object):
             samples_M_with_k_attrs[:, i] = samples_M[:, sample_attrs[i]]
         return samples_M_with_k_attrs
 
-    def train(self, T=100):
+    def train(self, T=100, m_step=7):
         m, n = np.shape(self.samples)
         for i in range(1, T + 1):
-            samples_M, labels_M = self._sampling(m/2)
+            samples_M, labels_M = self._sampling(m / m_step)
             samples_M_with_k_attrs = self._attribute_sampling(samples_M)
             stump = Stump(samples_M_with_k_attrs, labels_M)
             print 'Stump {0} error: {1}'.format(i, stump.min_error)
