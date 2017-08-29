@@ -116,6 +116,7 @@ class AdaBoost(object):
         plt.title('ROC for AdaBoost')
         ax.axis([0, 1, 0, 1])
         print 'AUC = {0}'.format(y_sum * x_step)
+        print
         plt.show()
 
 
