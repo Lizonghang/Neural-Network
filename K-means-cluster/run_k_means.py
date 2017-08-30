@@ -117,6 +117,6 @@ class Kmean(object):
 
 
 if __name__ == '__main__':
-    train_samples = load_data('testSet.txt')
+    train_samples = load_data('data.txt')
     kmean = Kmean(train_samples)
     u, cluster_assment = kmean.train(K=4)
