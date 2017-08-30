@@ -39,11 +39,11 @@ def plot(samples, u, cluster_assment=None, noncolor=True, loop_counter=0):
     plt.show()
 
 
-def load_data(filename):
+def load_data(filename, begin=0, end=None):
     samples = []
     with open(filename) as fp:
         for item in fp.readlines():
-            _ = item.strip().split()
+            _ = item.strip().split()[begin: end]
             samples.append(map(float, _))
     return np.matrix(samples)
 
@@ -146,8 +146,9 @@ class BisectingKmean(object):
     6.    计算将该簇一分为二后的总误差
     7.选择使得总误差最小的簇进行划分
     """
-    def __init__(self, train_samples):
+    def __init__(self, train_samples, log_and_plot=True):
         self.train_samples = train_samples
+        self.log_and_plot = log_and_plot
 
     def _calc_minkowski_dist(self, xi, xj, p):
         return np.power(np.sum(np.power(np.abs(xi - xj), p)), 1.0 / p)
@@ -169,7 +170,7 @@ class BisectingKmean(object):
         init_center = np.mean(self.train_samples, axis=0).tolist()[0]
         center_list = [init_center]
         # 绘制初始样本集
-        plot(self.train_samples, np.matrix(center_list[0]), noncolor=True)
+        if self.log_and_plot: plot(self.train_samples, np.matrix(center_list[0]), noncolor=True)
         # 初始化簇索引,误差
         for j in range(m):
             cluster_assment[j, :] = 0, self._calc_minkowski_dist(self.train_samples[j, :], init_center, 2) ** 2
@@ -201,9 +202,28 @@ class BisectingKmean(object):
             center_list.append(best_split_u[1, :])
 
             # 绘制currK时的样本聚类
-            plot(self.train_samples, np.matrix([flatten(center.tolist()) for center in center_list]), cluster_assment, noncolor=False, loop_counter=len(center_list) - 1)
+            if self.log_and_plot: plot(self.train_samples, np.matrix([flatten(center.tolist()) for center in center_list]), cluster_assment, noncolor=False, loop_counter=len(center_list) - 1)
 
         return np.matrix([flatten(center.tolist()) for center in center_list]), cluster_assment
+
+
+def show_on_map(mapfile, u):
+    """
+    注:由于地图图像部分信息未知,绘制结果不一定准确,但反应了中心区域的位置关系.
+    """
+    plt.close()
+    fig = plt.figure(0)
+    # 绘制地图
+    ax0 = fig.add_axes([0.1, 0.1, 0.8, 0.8], label='ax0')
+    ax0.imshow(plt.imread(mapfile))
+    ax0.axis('off')
+    # 绘制区域中心点
+    ax1 = fig.add_axes([0.3, 0.3, 0.5, 0.5], label='ax1', frameon=True)
+    xs = u[:, 0]
+    ys = u[:, 1]
+    ax1.scatter(xs.tolist(), ys.tolist(), s=40, c='r', edgecolors='')
+    ax1.axis('off')
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -218,3 +238,11 @@ if __name__ == '__main__':
     u, cluster_assment = kmean.train(K=3)
     bikmean = BisectingKmean(train_samples)
     u, cluster_assment = bikmean.train(K=3)
+
+    train_samples = load_data('places.txt', begin=-2)
+    kmean = Kmean(train_samples, log_and_plot=True)
+    u, cluster_assment = kmean.train(K=5)
+    show_on_map('map.png', u)
+    bikmean = BisectingKmean(train_samples, log_and_plot=True)
+    u, cluster_assment = bikmean.train(K=5)
+    show_on_map('map.png', u)
