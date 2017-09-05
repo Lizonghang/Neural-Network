@@ -31,19 +31,26 @@ eig_val, eig_vec = np.linalg.eig(B)
 # 注: 取出的维度对应的特征值不能为负
 d_ = 2
 
-eig_map = {}
-for i in range(m):
-    eig_map[eig_val[i]] = eig_vec[:, i]
+# 方式一
+eig_val_index = np.argsort(eig_val)
+eig_val_index = eig_val_index[:-(d_ + 1):-1]
+eig_val_ = eig_val[eig_val_index]
+eig_vec_ = eig_vec[:, eig_val_index]
 
-eig_val_ = np.zeros((d_,))
-eig_vec_ = np.zeros((m, d_))
-
-for d in range(d_):
-    val = sorted(eig_map.keys(), reverse=True)[d]
-    if val < 0: raise ValueError("Dimension %d eig_val %s less than zero" % (d + 1, val))
-    vec = eig_map[val]
-    eig_val_[d] = val
-    eig_vec_[:, d] = vec
+# 方式二
+# eig_map = {}
+# for i in range(m):
+#     eig_map[eig_val[i]] = eig_vec[:, i]
+#
+# eig_val_ = np.zeros((d_,))
+# eig_vec_ = np.zeros((m, d_))
+#
+# for d in range(d_):
+#     val = sorted(eig_map.keys(), reverse=True)[d]
+#     if val < 0: raise ValueError("Dimension %d eig_val %s less than zero" % (d + 1, val))
+#     vec = eig_map[val]
+#     eig_val_[d] = val
+#     eig_vec_[:, d] = vec
 
 # 计算样本的低维坐标
 X = np.dot(eig_vec_, np.diag(np.sqrt(eig_val_)))
