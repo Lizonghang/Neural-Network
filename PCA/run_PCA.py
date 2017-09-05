@@ -23,12 +23,13 @@ def plot1D(D, title='', show=False, color=None, labels=None):
     if n != 1: return
     plt.figure(0)
     if type(labels) != NoneType:
+        label_set = list(set(flatten(labels.tolist())))
         for i in range(len(color)):
             index = np.nonzero(labels[:, 0] == label_set[i])[0]
             samples = D[index, :]
             xs = samples[:, 0]
             ys = np.zeros(np.shape(xs))
-            c = colormap[i]
+            c = color[i]
             plt.scatter(flatten(xs.tolist()), ys, c=c, edgecolor='')
     else:
         xs = D[:, 0]
@@ -43,12 +44,13 @@ def plot2D(D, title='', show=False, color=None, labels=None):
     if n != 2: return
     plt.figure(0)
     if type(labels) != NoneType:
+        label_set = list(set(flatten(labels.tolist())))
         for i in range(len(color)):
             index = np.nonzero(labels[:, 0] == label_set[i])[0]
             samples = D[index, :]
             xs = samples[:, 0]
             ys = samples[:, 1]
-            c = colormap[i]
+            c = color[i]
             plt.scatter(flatten(xs.tolist()), flatten(ys.tolist()), c=c, edgecolor='')
     else:
         xs = D[:, 0]
@@ -58,7 +60,7 @@ def plot2D(D, title='', show=False, color=None, labels=None):
     if show: plt.show()
 
 
-def PCA(D, d_):
+def PCA(D, d_, calcu_eig_val_only=False):
     # 样本中心化
     Dmean = np.mean(D, axis=0)
     Dc = D - Dmean
@@ -67,6 +69,7 @@ def PCA(D, d_):
     C = Dc.T * Dc / float(m)
     # 对协方差矩阵做特征值分解
     eig_val, eig_vec = np.linalg.eig(C)
+    if calcu_eig_val_only: return eig_val
     # 取最大的d_个特征值所对应的特征向量
     eig_val_index = np.argsort(eig_val)
     eig_val_index = eig_val_index[:-(d_ + 1):-1]
@@ -93,3 +96,31 @@ colormap = ['#%02X%02X%02X' % (r(), r(), r()) for i in range(len(label_set))]
 plot2D(D, show=False, title='Origin 2D samples', labels=labels, color=colormap)
 plot2D(reconD_, show=True, title='Origin 2D samples & Reconstruct 2D samples', labels=labels, color=colormap)
 plot1D(D_, show=True, title='1D samples transport from origin 2D samples', labels=labels, color=colormap)
+
+
+# 在半导体数据集中的示例
+def replace_nan_with_mean(D):
+    m, n = np.shape(D)
+    for i in range(n):
+        meanVal = np.mean(D[np.nonzero(~np.isnan(D[:, i].A))[0], i])
+        D[np.nonzero(np.isnan(D[:, i].A))[0], i] = meanVal
+    return D
+
+
+def plot_rate(eig_val, N=20):
+    plt.figure()
+    eig_sum = eig_val.sum()
+    plt.plot(range(N), [eig_val[n] / eig_sum for n in range(N)])
+    plt.xlabel(u'主成分数目')
+    plt.ylabel(u'方差百分比')
+    plt.show()
+
+
+D, labels = load_data('secom.data')
+D = replace_nan_with_mean(D)
+eig_val = PCA(D, d_=np.inf, calcu_eig_val_only=True)
+print 'Origin D has %d dimensions.' % len(eig_val)
+print
+print 'eig_val = '
+print eig_val
+plot_rate(eig_val)
