@@ -25,25 +25,36 @@ for i in range(m):
         )
 
 # 对矩阵B做特征值分解
-eigVal, eigVec = np.linalg.eig(B)
+eig_val, eig_vec = np.linalg.eig(B)
 
 # 取eigVal_为d_个最大特征值所构成的对角矩阵,eigVec_为相应的特征向量矩阵
+# 注: 取出的维度对应的特征值不能为负
 d_ = 2
-eigVal_ = eigVal[:d_]
-eigVec_ = eigVec[:, :d_]
+
+eig_map = {}
+for i in range(m):
+    eig_map[eig_val[i]] = eig_vec[:, i]
+
+eig_val_ = np.zeros((d_,))
+eig_vec_ = np.zeros((m, d_))
+
+for d in range(d_):
+    val = sorted(eig_map.keys(), reverse=True)[d]
+    if val < 0: raise ValueError("Dimension %d eig_val %s less than zero" % (d + 1, val))
+    vec = eig_map[val]
+    eig_val_[d] = val
+    eig_vec_[:, d] = vec
 
 # 计算样本的低维坐标
-X = np.dot(eigVec_, np.diag(np.sqrt(eigVal_)))
+X = np.dot(eig_vec_, np.diag(np.sqrt(eig_val_)))
 
 print '降维到%s维后的样本坐标为:' % np.shape(X)[1]
 print X
 
 
-# 绘制降维样本点
-def plot(X):
+# 绘制2D降维样本点
+def plot2D(X):
     m, n = np.shape(X)
-
-    if n != 2: return
 
     plt.figure()
 
@@ -70,4 +81,4 @@ def plot(X):
     plt.title('Samples after MDS')
     plt.show()
 
-plot(X)
+if np.shape(X)[1] == 2: plot2D(X)
