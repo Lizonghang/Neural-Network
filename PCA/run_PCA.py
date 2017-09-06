@@ -60,7 +60,7 @@ def plot2D(D, title='', show=False, color=None, labels=None):
     if show: plt.show()
 
 
-def PCA(D, d_, calcu_eig_val_only=False):
+def PCA(D, n_components, calcu_eig_val_only=False):
     # 样本中心化
     Dmean = np.mean(D, axis=0)
     Dc = D - Dmean
@@ -72,7 +72,7 @@ def PCA(D, d_, calcu_eig_val_only=False):
     if calcu_eig_val_only: return eig_val
     # 取最大的d_个特征值所对应的特征向量
     eig_val_index = np.argsort(eig_val)
-    eig_val_index = eig_val_index[:-(d_ + 1):-1]
+    eig_val_index = eig_val_index[:-(n_components + 1):-1]
     eig_vec_ = eig_vec[:, eig_val_index]
     # 将初始数据转换到低维空间
     D_ = Dc * eig_vec_
@@ -82,14 +82,14 @@ def PCA(D, d_, calcu_eig_val_only=False):
 
 # 在数据集1中的示例
 D, _ = load_data('data1.txt')
-D_, reconD_ = PCA(D, d_=1)
+D_, reconD_ = PCA(D, n_components=1)
 plot2D(D, show=False, color='b', title='Origin 2D samples')
 plot2D(reconD_, show=True, color='r', title='Origin 2D samples(blue) & Reconstruct 2D samples(red)')
 plot1D(D_, show=True, color='r', title='1D samples transport from origin 2D samples')
 
 # 在数据集2中的示例
 D, labels = load_data('data2.txt', end=-1, label=-1)
-D_, reconD_ = PCA(D, d_=1)
+D_, reconD_ = PCA(D, n_components=1)
 label_set = list(set(flatten(labels.tolist())))
 r = lambda: random.randint(0, 255)
 colormap = ['#%02X%02X%02X' % (r(), r(), r()) for i in range(len(label_set))]
@@ -107,10 +107,10 @@ def replace_nan_with_mean(D):
     return D
 
 
-def plot_rate(eig_val, N=20):
+def plot_rate(eig_val, n_components=20):
     plt.figure()
     eig_sum = eig_val.sum()
-    plt.plot(range(N), [eig_val[n] / eig_sum for n in range(N)])
+    plt.plot(range(n_components), [eig_val[n] / eig_sum for n in range(n_components)])
     plt.xlabel(u'主成分数目')
     plt.ylabel(u'方差百分比')
     plt.show()
@@ -118,9 +118,9 @@ def plot_rate(eig_val, N=20):
 
 D, labels = load_data('secom.data')
 D = replace_nan_with_mean(D)
-eig_val = PCA(D, d_=np.inf, calcu_eig_val_only=True)
+eig_val = PCA(D, n_components=np.inf, calcu_eig_val_only=True)
 print 'Origin D has %d dimensions.' % len(eig_val)
 print
 print 'eig_val = '
 print eig_val
-plot_rate(eig_val)
+plot_rate(eig_val, n_components=20)
