@@ -71,9 +71,7 @@ def PCA(D, n_components, calcu_eig_val_only=False):
     eig_val, eig_vec = np.linalg.eig(C)
     if calcu_eig_val_only: return eig_val
     # 取最大的d_个特征值所对应的特征向量
-    eig_val_index = np.argsort(eig_val)
-    eig_val_index = eig_val_index[:-(n_components + 1):-1]
-    eig_vec_ = eig_vec[:, eig_val_index]
+    eig_vec_ = eig_vec[:, n_components]
     # 将初始数据转换到低维空间
     D_ = Dc * eig_vec_
     reconD_ = D_ * eig_vec_.T + Dmean
