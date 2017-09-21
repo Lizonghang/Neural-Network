@@ -294,15 +294,15 @@ test_reduced = model.transform(test_set)
 
 # Hyperparameters tuning
 # train using a Random Forest Classifier
-run_gridsearch = False
+run_gridsearch = True
 if run_gridsearch:
     param_grid = {
         'max_depth': [4, 6, 8],
-        'n_estimators': [50, 10],
-        'max_features': ['sqrt', 'auto', 'log2'],
-        'min_samples_split': [1., 3, 10],
-        'min_samples_leaf': [1, 3, 10],
-        'bootstrap': [True, False]
+        'n_estimators': [100, 75, 50, 25, 10],
+        'max_features': ['auto'],
+        'min_samples_split': [3],
+        'min_samples_leaf': [1],
+        'bootstrap': [True]
     }
     random_forest = RandomForestClassifier()
     cross_validation = StratifiedKFold(targets, n_folds=5)
@@ -316,7 +316,7 @@ if run_gridsearch:
     print 'Best params: {}'.format(grid_search.best_params_)
 else:
     params = {
-        'max_depth': 8,
+        'max_depth': 6,
         'n_estimators': 50,
         'max_features': 'auto',
         'min_samples_split': 3,
