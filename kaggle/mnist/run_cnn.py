@@ -143,13 +143,15 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
 
         for step in xrange(MAX_TRAINING_STEP):
-            # Get batch images.
+            # Batch training
+            print 'Processing step {}, waiting to train {} batches ...'.format(step, train_set.shape[0] / BATCH_SIZE)
+
             for batch_index in range(train_set.shape[0] / BATCH_SIZE):
                 batch_images = train_set.iloc[batch_index * BATCH_SIZE: (batch_index + 1) * BATCH_SIZE].astype(np.float32).values.reshape((BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1))
                 batch_labels = train_labels.iloc[batch_index * BATCH_SIZE: (batch_index + 1) * BATCH_SIZE].astype(np.int32).tolist()
                 sess.run([train_op], feed_dict={images: batch_images, labels: batch_labels})
 
-            if step % 10 == 0:
+            if step % 100 == 0:
                 correct_counter = 0
                 for valid_batch_num in xrange(VALID_NUM / BATCH_SIZE):
                     batch_images_valid = valid_set.iloc[valid_batch_num * BATCH_SIZE: (valid_batch_num + 1) * BATCH_SIZE].astype(np.float32).values.reshape((BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1))
