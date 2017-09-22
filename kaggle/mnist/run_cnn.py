@@ -5,21 +5,21 @@ import pandas as pd
 
 IMAGE_SIZE = 28
 NUM_CLASSES = 10
-INITIAL_LEARNING_RATE = 0.001
+INITIAL_LEARNING_RATE = 0.05
 LEARNING_RATE_DECAY_FACTOR = 0.1
-BATCH_SIZE = 5
+BATCH_SIZE = 100
 MOVING_AVERAGE_DECAY = 0.9999
 MAX_TRAINING_STEP = 10000
-TRAIN_NUM = 80
-VALID_NUM = 20
+TRAIN_NUM = 40000
+VALID_NUM = 2000
 
 
 def inference(images):
     # conv1
     with tf.variable_scope('conv1') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, 1, 32], stddev=1e-4))
+        kernel = tf.Variable(tf.truncated_normal([5, 5, 1, 32], stddev=0.01))
         conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.0, shape=[32]))
+        biases = tf.Variable(tf.constant(0.1, shape=[32]))
         bias = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(bias, name=scope.name)
 
@@ -31,9 +31,9 @@ def inference(images):
 
     # conv2
     with tf.variable_scope('conv2') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, 32, 64], stddev=1e-4))
+        kernel = tf.Variable(tf.truncated_normal([5, 5, 32, 64], stddev=0.01))
         conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.0, shape=[64]))
+        biases = tf.Variable(tf.constant(0.1, shape=[64]))
         bias = tf.nn.bias_add(conv, biases)
         conv2 = tf.nn.relu(bias, name=scope.name)
 
@@ -50,23 +50,22 @@ def inference(images):
             dim *= d
         reshape = tf.reshape(pool2, [-1, dim])
 
-        weights = tf.Variable(tf.truncated_normal([dim, 256], stddev=1e-4))
-        biases = tf.Variable(tf.constant(0.0, shape=[256]))
+        weights = tf.Variable(tf.truncated_normal([dim, 256], stddev=0.01))
+        biases = tf.Variable(tf.constant(0.1, shape=[256]))
         local3 = tf.nn.relu(tf.matmul(reshape, weights) + biases, name=scope.name)
+
+    # batch normalization
+    norm3 = tf.layers.batch_normalization(local3)
 
     # dropout
     with tf.variable_scope('dropout') as scope:
-        dropout = tf.nn.dropout(local3, keep_prob=0.8, name=scope.name)
+        dropout = tf.nn.dropout(norm3, keep_prob=0.8, name=scope.name)
 
     # local4
     with tf.variable_scope('local4') as scope:
-        weights = tf.Variable(tf.truncated_normal([256, NUM_CLASSES], stddev=1e-4))
-        biases = tf.Variable(tf.constant(0.0, shape=[NUM_CLASSES]))
+        weights = tf.Variable(tf.truncated_normal([256, NUM_CLASSES], stddev=0.01))
+        biases = tf.Variable(tf.constant(0.1, shape=[NUM_CLASSES]))
         local4 = tf.add(tf.matmul(dropout, weights), biases, name=scope.name)
-
-    # softmax output
-    # with tf.variable_scope('softmax_output') as scope:
-    #     softmax_output = tf.nn.softmax(local4, name=scope.name)
 
     return local4
 
@@ -106,7 +105,8 @@ def train(total_loss, global_step):
 
 if __name__ == '__main__':
     print 'Loading train dataset ...'
-    train_set = pd.read_csv('mini_train.csv')
+    # train_set = pd.read_csv('mini_train.csv')
+    train_set = pd.read_csv('train.csv')
     train_labels = train_set['label']
     train_set.drop("label", axis=1, inplace=True)
 
@@ -137,8 +137,8 @@ if __name__ == '__main__':
         loss = calculate_loss(logits, labels)
 
         # Trains the model with one batch of samples and updates the model parameters.
-        # train_op = train(loss, global_step)
-        train_op = tf.train.AdamOptimizer(INITIAL_LEARNING_RATE).minimize(loss)
+        train_op = train(loss, global_step)
+        # train_op = tf.train.AdamOptimizer(INITIAL_LEARNING_RATE).minimize(loss)
 
         sess.run(tf.global_variables_initializer())
 
