@@ -94,20 +94,21 @@ with tf.name_scope('eval'):
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 writer = tf.summary.FileWriter('logs', graph=sess.graph)
-
-for i in range(10000):
-    batch = mnist.train.next_batch(50)
-    sess.run(train_op, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    # if i % 100 == 0:
-    #     print 'step {0}, training accuracy {1}'.format(
-    #         i,
-    #         sess.run(accuracy, feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-    #     )
-    if i % 100 == 0:
-        summary = sess.run(tf.summary.merge_all(), feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-        writer.add_summary(summary, i)
-
-print 'test accuracy {0}'.format(
-    sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
-)
-sess.close()
+batch = mnist.train.next_batch(50)
+print sess.run(y, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+# for i in range(10000):
+#     batch = mnist.train.next_batch(50)
+#     sess.run(train_op, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+#     # if i % 100 == 0:
+#     #     print 'step {0}, training accuracy {1}'.format(
+#     #         i,
+#     #         sess.run(accuracy, feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
+#     #     )
+#     if i % 100 == 0:
+#         summary = sess.run(tf.summary.merge_all(), feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+#         writer.add_summary(summary, i)
+#
+# print 'test accuracy {0}'.format(
+#     sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
+# )
+# sess.close()
