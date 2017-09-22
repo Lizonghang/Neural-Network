@@ -333,7 +333,7 @@ def compute_score(clf, X, y, scoring='accuracy'):
     xval = cross_val_score(clf, X, y, cv=5, scoring=scoring)
     return np.mean(xval)
 
-print 'Finally predict accuracy: ', compute_score(random_forest, train_set, targets, scoring='accuracy')
+print 'Finally predict accuracy: ', compute_score(model, train_set, targets, scoring='accuracy')
 
 # generate submission file
 submission = pd.DataFrame({
