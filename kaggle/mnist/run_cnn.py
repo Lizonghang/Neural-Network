@@ -11,8 +11,9 @@ BATCH_SIZE = 50
 # BATCH_SIZE = 5
 MOVING_AVERAGE_DECAY = 0.9999
 MAX_TRAINING_STEP = 100
-TRAIN_NUM = 40000
-VALID_NUM = 2000
+TRAIN_NUM = 42000
+# TRAIN_NUM = 40000
+# VALID_NUM = 2000
 # TRAIN_NUM = 80
 # VALID_NUM = 20
 EVAL_STEP = 10
@@ -90,7 +91,7 @@ def calculate_loss(logits, labels):
 def train(total_loss, global_step):
     # Consider decay the learning rate exponentially on the number of steps
     # use tf.train.exponential_decay()
-    global lr
+    # global lr
     decay_step = EVAL_STEP * TRAIN_NUM / BATCH_SIZE
     lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
                                     global_step,
@@ -127,11 +128,11 @@ if __name__ == '__main__':
         float_image = np.divide(image, 255.0)
         train_set.iloc[i] = float_image
 
-    print 'Split train dataset and valid dataset'
-    valid_set = train_set.iloc[TRAIN_NUM:]
-    valid_labels = train_labels.iloc[TRAIN_NUM:]
-    train_set = train_set.head(TRAIN_NUM).copy()
-    train_labels = train_labels.head(TRAIN_NUM).copy()
+    # print 'Split train dataset and valid dataset'
+    # valid_set = train_set.iloc[TRAIN_NUM:]
+    # valid_labels = train_labels.iloc[TRAIN_NUM:]
+    # train_set = train_set.head(TRAIN_NUM).copy()
+    # train_labels = train_labels.head(TRAIN_NUM).copy()
 
     with tf.Session() as sess:
 
@@ -161,14 +162,14 @@ if __name__ == '__main__':
                 batch_labels = train_labels.iloc[batch_index * BATCH_SIZE: (batch_index + 1) * BATCH_SIZE].astype(np.int32).tolist()
                 sess.run([train_op], feed_dict={images: batch_images, labels: batch_labels})
 
-            if step % EVAL_STEP == 0:
-                images_valid = valid_set.astype(np.float32).values.reshape((-1, IMAGE_SIZE, IMAGE_SIZE, 1))
-                labels_valid = valid_labels.astype(np.int32).tolist()
-                logits_valid_set = sess.run(logits, feed_dict={images: images_valid})
-                predict = logits_valid_set.argmax(axis=1)
-                correct_counter = (np.array(labels_valid) == np.array(predict)).sum()
-                accuracy = correct_counter / float(len(predict))
-                print 'Accuracy = {0}% at step {1}, current learning rate is {2}'.format(accuracy * 100, step, sess.run(lr))
+            # if step % EVAL_STEP == 0:
+            #     images_valid = valid_set.astype(np.float32).values.reshape((-1, IMAGE_SIZE, IMAGE_SIZE, 1))
+            #     labels_valid = valid_labels.astype(np.int32).tolist()
+            #     logits_valid_set = sess.run(logits, feed_dict={images: images_valid})
+            #     predict = logits_valid_set.argmax(axis=1)
+            #     correct_counter = (np.array(labels_valid) == np.array(predict)).sum()
+            #     accuracy = correct_counter / float(len(predict))
+            #     print 'Accuracy = {0}% at step {1}, current learning rate is {2}'.format(accuracy * 100, step, sess.run(lr))
 
         print 'Loading train dataset ...'
         test_set = pd.read_csv('test.csv')
