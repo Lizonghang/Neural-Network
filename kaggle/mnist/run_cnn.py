@@ -15,6 +15,7 @@ TRAIN_NUM = 40000
 VALID_NUM = 2000
 # TRAIN_NUM = 80
 # VALID_NUM = 20
+EVAL_STEP = 10
 
 
 def inference(images):
@@ -89,7 +90,12 @@ def calculate_loss(logits, labels):
 def train(total_loss, global_step):
     # Consider decay the learning rate exponentially on the number of steps
     # use tf.train.exponential_decay()
-    lr = INITIAL_LEARNING_RATE
+    # lr = INITIAL_LEARNING_RATE
+    lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
+                                    global_step,
+                                    EVAL_STEP,
+                                    LEARNING_RATE_DECAY_FACTOR,
+                                    staircase=True)
     # Compute gradients.
     # optimizer = tf.train.GradientDescentOptimizer(lr)
     # optimizer = tf.train.RMSPropOptimizer(lr)
@@ -103,7 +109,7 @@ def train(total_loss, global_step):
 
     with tf.control_dependencies([apply_gradients_op, variable_averages_op]):
         train_op = tf.no_op(name='train')
-    return train_op
+    return train_op, lr
 
 
 if __name__ == '__main__':
@@ -140,7 +146,7 @@ if __name__ == '__main__':
         loss = calculate_loss(logits, labels)
 
         # Trains the model with one batch of samples and updates the model parameters.
-        train_op = train(loss, global_step)
+        train_op, lr = train(loss, global_step)
         # train_op = tf.train.AdamOptimizer(INITIAL_LEARNING_RATE).minimize(loss)
 
         sess.run(tf.global_variables_initializer())
@@ -154,7 +160,7 @@ if __name__ == '__main__':
                 batch_labels = train_labels.iloc[batch_index * BATCH_SIZE: (batch_index + 1) * BATCH_SIZE].astype(np.int32).tolist()
                 sess.run([train_op], feed_dict={images: batch_images, labels: batch_labels})
 
-            if step % 10 == 0:
+            if step % EVAL_STEP == 0:
                 correct_counter = 0
                 for valid_batch_num in xrange(VALID_NUM / BATCH_SIZE):
                     batch_images_valid = valid_set.iloc[valid_batch_num * BATCH_SIZE: (valid_batch_num + 1) * BATCH_SIZE].astype(np.float32).values.reshape((BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1))
@@ -163,4 +169,4 @@ if __name__ == '__main__':
                     predict = logits_valid_set.argmax(axis=1)
                     correct_counter += (np.array(batch_labels_valid) == np.array(predict)).sum()
                 accuracy = correct_counter / float(VALID_NUM / BATCH_SIZE * BATCH_SIZE)
-                print 'Accuracy = {0}% at step {1}'.format(accuracy * 100, step)
+                print 'Accuracy = {0}% at step {1}, current learning rate is {2}'.format(accuracy * 100, step, sess.run(lr))
