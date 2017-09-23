@@ -5,13 +5,16 @@ import pandas as pd
 
 IMAGE_SIZE = 28
 NUM_CLASSES = 10
-INITIAL_LEARNING_RATE = 0.05
+INITIAL_LEARNING_RATE = 0.01
 LEARNING_RATE_DECAY_FACTOR = 0.1
-BATCH_SIZE = 100
+BATCH_SIZE = 50
+# BATCH_SIZE = 5
 MOVING_AVERAGE_DECAY = 0.9999
-MAX_TRAINING_STEP = 10000
+MAX_TRAINING_STEP = 1000
 TRAIN_NUM = 40000
 VALID_NUM = 2000
+# TRAIN_NUM = 80
+# VALID_NUM = 20
 
 
 def inference(images):
@@ -106,7 +109,7 @@ def train(total_loss, global_step):
 if __name__ == '__main__':
     print 'Loading train dataset ...'
     # train_set = pd.read_csv('mini_train.csv')
-    train_set = pd.read_csv('train.csv')
+    train_set = pd.read_csv('mini_train.csv')
     train_labels = train_set['label']
     train_set.drop("label", axis=1, inplace=True)
 
@@ -151,7 +154,7 @@ if __name__ == '__main__':
                 batch_labels = train_labels.iloc[batch_index * BATCH_SIZE: (batch_index + 1) * BATCH_SIZE].astype(np.int32).tolist()
                 sess.run([train_op], feed_dict={images: batch_images, labels: batch_labels})
 
-            if step % 100 == 0:
+            if step % 10 == 0:
                 correct_counter = 0
                 for valid_batch_num in xrange(VALID_NUM / BATCH_SIZE):
                     batch_images_valid = valid_set.iloc[valid_batch_num * BATCH_SIZE: (valid_batch_num + 1) * BATCH_SIZE].astype(np.float32).values.reshape((BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1))
