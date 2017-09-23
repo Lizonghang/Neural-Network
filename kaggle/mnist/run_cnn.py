@@ -5,7 +5,7 @@ import pandas as pd
 
 IMAGE_SIZE = 28
 NUM_CLASSES = 10
-INITIAL_LEARNING_RATE = 0.01
+INITIAL_LEARNING_RATE = 0.1
 LEARNING_RATE_DECAY_FACTOR = 0.1
 BATCH_SIZE = 50
 # BATCH_SIZE = 5
@@ -90,10 +90,11 @@ def calculate_loss(logits, labels):
 def train(total_loss, global_step):
     # Consider decay the learning rate exponentially on the number of steps
     # use tf.train.exponential_decay()
-    # lr = INITIAL_LEARNING_RATE
+    global lr
+    decay_step = EVAL_STEP * TRAIN_NUM / BATCH_SIZE
     lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
                                     global_step,
-                                    EVAL_STEP,
+                                    decay_step,
                                     LEARNING_RATE_DECAY_FACTOR,
                                     staircase=True)
     # Compute gradients.
