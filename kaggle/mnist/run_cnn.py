@@ -109,7 +109,7 @@ def train(total_loss, global_step):
 if __name__ == '__main__':
     print 'Loading train dataset ...'
     # train_set = pd.read_csv('mini_train.csv')
-    train_set = pd.read_csv('mini_train.csv')
+    train_set = pd.read_csv('train.csv')
     train_labels = train_set['label']
     train_set.drop("label", axis=1, inplace=True)
 
