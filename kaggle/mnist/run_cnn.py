@@ -6,11 +6,11 @@ import pandas as pd
 IMAGE_SIZE = 28
 NUM_CLASSES = 10
 INITIAL_LEARNING_RATE = 0.01
-LEARNING_RATE_DECAY_FACTOR = 0.9
+LEARNING_RATE_DECAY_FACTOR = 0.1
 BATCH_SIZE = 50
 # BATCH_SIZE = 5
 MOVING_AVERAGE_DECAY = 0.9999
-MAX_TRAINING_STEP = 1000
+MAX_TRAINING_STEP = 100
 TRAIN_NUM = 40000
 VALID_NUM = 2000
 # TRAIN_NUM = 80
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     train_labels = train_set['label']
     train_set.drop("label", axis=1, inplace=True)
 
-    print 'Standardize each image ...'
+    print 'Standardize train images ...'
     samples_num = train_set.shape[0]
     for i in xrange(samples_num):
         image = train_set.iloc[i].values
@@ -162,12 +162,32 @@ if __name__ == '__main__':
                 sess.run([train_op], feed_dict={images: batch_images, labels: batch_labels})
 
             if step % EVAL_STEP == 0:
-                correct_counter = 0
-                for valid_batch_num in xrange(VALID_NUM / BATCH_SIZE):
-                    batch_images_valid = valid_set.iloc[valid_batch_num * BATCH_SIZE: (valid_batch_num + 1) * BATCH_SIZE].astype(np.float32).values.reshape((BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1))
-                    batch_labels_valid = valid_labels.iloc[valid_batch_num * BATCH_SIZE: (valid_batch_num + 1) * BATCH_SIZE].astype(np.int32).tolist()
-                    logits_valid_set = sess.run(logits, feed_dict={images: batch_images_valid})
-                    predict = logits_valid_set.argmax(axis=1)
-                    correct_counter += (np.array(batch_labels_valid) == np.array(predict)).sum()
-                accuracy = correct_counter / float(VALID_NUM / BATCH_SIZE * BATCH_SIZE)
+                images_valid = valid_set.astype(np.float32).values.reshape((-1, IMAGE_SIZE, IMAGE_SIZE, 1))
+                labels_valid = valid_labels.astype(np.int32).tolist()
+                logits_valid_set = sess.run(logits, feed_dict={images: images_valid})
+                predict = logits_valid_set.argmax(axis=1)
+                correct_counter = (np.array(labels_valid) == np.array(predict)).sum()
+                accuracy = correct_counter / float(len(predict))
                 print 'Accuracy = {0}% at step {1}, current learning rate is {2}'.format(accuracy * 100, step, sess.run(lr))
+
+        print 'Loading train dataset ...'
+        test_set = pd.read_csv('test.csv')
+
+        print 'Standardize test images ...'
+        samples_num = test_set.shape[0]
+        for i in xrange(samples_num):
+            image = test_set.iloc[i].values
+            float_image = np.divide(image, 255.0)
+            test_set.iloc[i] = float_image
+
+        print 'Make prediction from test set ...'
+        images_test = test_set.astype(np.float32).values.reshape((-1, IMAGE_SIZE, IMAGE_SIZE, 1))
+        logits_valid_set = sess.run(logits, feed_dict={images: images_test})
+        predict = logits_valid_set.argmax(axis=1)
+
+        print 'Make submission file ...'
+        submission = pd.DataFrame({
+            'ImageId': range(1, images_test.shape[0] + 1),
+            'Label': predict
+        })
+        submission.to_csv('predict.csv', index=False)
