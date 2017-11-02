@@ -3,3 +3,5 @@
 mnist/logs
 *logs
 .idea
+*predict.csv
+dataset

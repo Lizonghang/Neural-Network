@@ -14,7 +14,6 @@ from sklearn.cross_validation import StratifiedKFold, cross_val_score
 from sklearn.grid_search import GridSearchCV
 
 # I - Exploratory data analysis
-
 """
 # loading the training set
 data = pd.read_csv('train.csv')
@@ -87,13 +86,14 @@ def get_combined_data():
     test_set = pd.read_csv('test.csv')
     targets = train_set['Survived']
     train_set.drop(['Survived'], axis=1, inplace=True)
+    print 'Origin shape of train set: ', np.shape(train_set)
 
     combined = train_set.append(test_set)
     combined.reset_index(inplace=True)
     combined.drop(['index'], axis=1, inplace=True)
-    return combined
+    return combined, targets
 
-combined = get_combined_data()
+combined, targets = get_combined_data()
 
 
 # extracting the passenger titles
@@ -246,6 +246,8 @@ def process_family(combined):
     combined['Single'] = combined['FamilySize'].map(lambda s: 1 if s == 1 else 0)
     combined['SmallFamily'] = combined['FamilySize'].map(lambda s: 1 if 2 <= s <= 4 else 0)
     combined['LargeFamily'] = combined['FamilySize'].map(lambda s: 1 if s >= 5 else 0)
+
+    combined.drop(['Parch', 'SibSp'], axis=1, inplace=True)
     return combined
 
 combined = process_family(combined)
@@ -259,12 +261,11 @@ combined.drop(['PassengerId'], axis=1, inplace=True)
 # recovering the train set and the test set from the combined dataset.
 def recover_train_test_target(combined):
     train_set = combined.head(891)
-    targets = pd.read_csv('train.csv')['Survived']
     test_set = combined.iloc[891:]
-    return train_set, targets, test_set
+    return train_set, test_set
 
-train_set, targets, test_set = recover_train_test_target(combined)
-
+train_set, test_set = recover_train_test_target(combined)
+print 'Shape of train set after Sparse Coding: ', np.shape(train_set)
 
 # Feature selection
 # When feature engineering is done, we usually tend to decrease the dimensionality
@@ -279,18 +280,19 @@ clf = RandomForestClassifier(n_estimators=50, max_features='sqrt')
 clf = clf.fit(train_set, targets)
 
 # have a look at the importance of each feature.
-# feature = pd.DataFrame()
-# feature['feature'] = train_set.columns
-# feature['importance'] = clf.feature_importances_
-# feature.sort_values(by=['importance'], ascending=True, inplace=True)
-# feature.set_index('feature', inplace=True)
-# feature.plot(kind='barh', figsize=(20, 10))
-# plt.show()
+feature = pd.DataFrame()
+feature['feature'] = train_set.columns
+feature['importance'] = clf.feature_importances_
+feature.sort_values(by=['importance'], ascending=True, inplace=True)
+feature.set_index('feature', inplace=True)
+feature.plot(kind='barh', figsize=(20, 10))
+plt.show()
 
 # transform train set and test set in a more compact datasets.
 model = SelectFromModel(clf, prefit=True)
 train_reduced = model.transform(train_set)
 test_reduced = model.transform(test_set)
+print 'Shape of train set after Feature Selection: ', np.shape(train_reduced)
 
 # Hyperparameters tuning
 # train using a Random Forest Classifier

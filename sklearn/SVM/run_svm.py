@@ -20,7 +20,6 @@ for index, (image, label) in enumerate(images_and_labels[:10]):
 # classifier.set_params(kernel='linear')
 # classifier.set_params(kernel='rbf')
 classifier = svm.SVC(gamma=0.001)
-
 classifier.fit(digits.data[:n_samples / 2], digits.target[:n_samples / 2])
 
 # joblib.dump(classifier, 'svm.pkl')
