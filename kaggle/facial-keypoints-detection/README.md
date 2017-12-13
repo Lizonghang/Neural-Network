@@ -1,1 +1,3 @@
-![](running.gif)
+<center>
+  <iframe src="running.gif">
+</center>
