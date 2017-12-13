@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     # Step 5: Load your dataset and start training
     for i in range(30000):
-        batch_xs, batch_ys = net.mnist.train.next_batch(100)
+        batch_xs, batch_ys = net.mnist.train.next_batch(64)
         net.sess.run(net.train_op, feed_dict={
             net.x: batch_xs,
             net.y_: batch_ys,

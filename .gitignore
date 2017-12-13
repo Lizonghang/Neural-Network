@@ -5,3 +5,5 @@ mnist/logs
 .idea
 *predict.csv
 dataset
+*.h5
+img

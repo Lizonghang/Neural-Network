@@ -96,7 +96,7 @@ with tf.Session() as sess:
     writer = tf.summary.FileWriter('logs', graph=sess.graph)
 
     for i in range(10000):
-        batch = mnist.train.next_batch(50)
+        batch = mnist.train.next_batch(64)
         sess.run(train_op, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
 
         if i % 100 == 0:
