@@ -1,14 +1,11 @@
 import pandas as pd
 import numpy as np
 import matplotlib
-import os
-
 matplotlib.use('Agg')
+import os
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 from types import NoneType
-
-np.random.seed(1)
 
 
 def load_train_data():
@@ -35,6 +32,7 @@ def display(X, y_true=None, y_pred=None, savefig=False):
     import time
     plt.figure()
     plt.imshow(X.reshape((96, 96)), cmap='gray')
+    plt.axis('off')
     if type(y_true) is not NoneType:
         plt.scatter(y_true[0::2] * 96.0, y_true[1::2] * 96.0, c='y', marker='o')
     if type(y_pred) is not NoneType:
@@ -49,30 +47,29 @@ def display(X, y_true=None, y_pred=None, savefig=False):
     plt.close()
 
 
-def make_submission(test_labels):
-    test_labels *= 96.0
-    test_labels = test_labels.clip(0, 96)
-
-    lookup_table = pd.read_csv('dataset/IdLookupTable.csv')
-    values = []
-
-    cols = ["left_eye_center_x", "left_eye_center_y", "right_eye_center_x", "right_eye_center_y",
-            "left_eye_inner_corner_x", "left_eye_inner_corner_y", "left_eye_outer_corner_x",
-            "left_eye_outer_corner_y", "right_eye_inner_corner_x", "right_eye_inner_corner_y",
-            "right_eye_outer_corner_x", "right_eye_outer_corner_y", "left_eyebrow_inner_end_x",
-            "left_eyebrow_inner_end_y", "left_eyebrow_outer_end_x", "left_eyebrow_outer_end_y",
-            "right_eyebrow_inner_end_x", "right_eyebrow_inner_end_y", "right_eyebrow_outer_end_x",
-            "right_eyebrow_outer_end_y", "nose_tip_x", "nose_tip_y", "mouth_left_corner_x",
-            "mouth_left_corner_y", "mouth_right_corner_x", "mouth_right_corner_y", "mouth_center_top_lip_x",
-            "mouth_center_top_lip_y", "mouth_center_bottom_lip_x", "mouth_center_bottom_lip_y"]
-
-    for index, row in lookup_table.iterrows():
-        values.append((
-            row['RowId'],
-            test_labels[row.ImageId - 1][cols.index(row.FeatureName)],
-        ))
-    submission = pd.DataFrame(values, columns=('RowId', 'Location'))
-    submission.to_csv('dataset/submission.csv', index=False)
+def batch_display(X, y_true=None, y_pred=None, savefig=False):
+    import time
+    X = X.reshape((4, 96, 96))
+    im = np.zeros((96*2, 96*2))
+    for i in range(2):
+        for j in range(2):
+            im[i*96:(i+1)*96, j*96:(j+1)*96] = X[i*2+j]
+    plt.imshow(im, cmap='gray')
+    plt.axis('off')
+    if type(y_true) is not NoneType:
+        for i in range(2):
+            for j in range(2):
+                plt.scatter(y_true[i*2+j, 0::2]*96.0 + j*96.0, y_true[i*2+j, 1::2]*96.0 + i*96.0, c='y', marker='o', s=10)
+    if type(y_pred) is not NoneType:
+        y_pred = y_pred.clip(0, 1)
+        for i in range(2):
+            for j in range(2):
+                plt.scatter(y_pred[i*2+j, 0::2]*96.0 + j*96.0, y_pred[i*2+j, 1::2]*96.0 + i*96.0, c='r', marker='x', s=10)
+    if savefig:
+        plt.savefig('runlog/{}.png'.format(int(time.time()*100)))
+    else:
+        plt.show()
+    plt.close()
 
 
 if __name__ == '__main__':
