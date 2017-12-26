@@ -23,6 +23,6 @@ def display(X, y_pred):
 
 if __name__ == '__main__':
     model = load_model('ckpt/model.h5')
-    X = load_image('test.png')
+    X = load_image('test1.png')
     y_pred = model.predict(X).reshape((30,))
     display(X, y_pred)
